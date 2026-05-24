@@ -2005,6 +2005,549 @@ tr:hover td { background:var(--slate-50); }
   .fc-hb-line { border-color: #30363d; }
 }
 
+
+/* ══════════════════════════════════════════════════════════════
+   FLOWCHART v3 — Proper guideline-style top-down flowchart
+   Supports: zoom/pan, horizontal scroll, download
+══════════════════════════════════════════════════════════════ */
+
+/* Container: scrollable + zoomable */
+.fc-chart-wrap {
+  position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  background: var(--bg-surface, #fff);
+  border-radius: 14px;
+  border: 1px solid var(--border, #e2e8f0);
+  padding: 16px 10px 10px;
+  min-height: 200px;
+}
+.fc-chart-wrap:active { cursor: grabbing; }
+
+/* Toolbar: zoom controls */
+.fc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 10px;
+  flex-wrap: wrap;
+}
+.fc-zoom-btn {
+  background: var(--bg-surface,#fff);
+  border: 1px solid var(--border,#e2e8f0);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-secondary,#475569);
+  cursor: pointer;
+  line-height: 1;
+  transition: all .15s;
+}
+.fc-zoom-btn:active { background: var(--teal-pale,#f0faf8); color: var(--teal,#0f7b6c); }
+.fc-zoom-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted,#94a3b8);
+  min-width: 36px;
+  text-align: center;
+}
+.fc-zoom-reset {
+  font-size: 11px;
+  color: var(--text-muted,#94a3b8);
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--border,#e2e8f0);
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+
+/* Inner chart: scalable via CSS transform */
+.fc-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: max-content;
+  transform-origin: top center;
+  transition: transform .2s ease;
+}
+
+/* ── NODE ROW ── */
+.fc-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  min-width: max-content;
+}
+.fc-col-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 220px;
+  max-width: 280px;
+  flex-shrink: 0;
+}
+
+/* ── NODE BOX ── */
+.fc-node {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  transition: box-shadow .15s, transform .15s;
+  cursor: default;
+}
+.fc-node:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.13);
+  transform: translateY(-1px);
+}
+.fc-node-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  padding: 10px 12px 7px;
+  color: #0f172a;
+}
+.fc-node-body {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.55;
+  padding: 0 12px 9px;
+  border-top: 1px solid rgba(0,0,0,.05);
+  padding-top: 7px;
+}
+.fc-node-drugs {
+  padding: 0 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fc-drug-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--teal-dark,#0a5a4e);
+  background: var(--teal-pale,#f0faf8);
+  border: 1px solid var(--teal-light,#e0f5f2);
+  border-radius: 6px;
+  padding: 3px 8px;
+  line-height: 1.4;
+}
+
+/* ── CONNECTOR SECTION ── */
+.fc-connector-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: max-content;
+  gap: 16px;
+}
+
+/* Single child connector */
+.fc-connector-single {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.fc-vline {
+  width: 2px;
+  min-height: 16px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+.fc-vline-drop {
+  width: 0;
+  min-height: 10px;
+  border-left: 2px solid #94a3b8;
+}
+.fc-arrow {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+/* Edge label */
+.fc-elabel {
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 20px;
+  padding: 3px 10px;
+  text-align: center;
+  max-width: 220px;
+  word-break: break-word;
+  line-height: 1.4;
+  margin: 3px 4px;
+}
+
+/* Fork: multiple children */
+.fc-fork-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: max-content;
+}
+.fc-fork-hbar {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+}
+.fc-fork-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 220px;
+  max-width: 280px;
+  flex-shrink: 0;
+}
+/* Horizontal bar segments */
+.fc-hbar-seg {
+  height: 0;
+  border-top: 2px solid #94a3b8;
+  width: 100%;
+}
+.fc-hbar-first {
+  width: 50%;
+  align-self: flex-end;
+}
+.fc-hbar-last {
+  width: 50%;
+  align-self: flex-start;
+}
+.fc-hbar-mid {
+  width: 100%;
+}
+
+/* Zoom hint */
+.fc-hint {
+  font-size: 10px;
+  color: var(--text-muted,#94a3b8);
+  text-align: center;
+  padding: 4px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  .fc-chart-wrap { background: #1e293b; border-color: #30363d; }
+  .fc-node { box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  .fc-node-title { color: #e6edf3; }
+  .fc-node-body { color: #8b949e; border-top-color: rgba(255,255,255,.07); }
+  .fc-drug-tag { background: rgba(15,123,108,.15); border-color: rgba(15,123,108,.3); color: #5eead4; }
+  .fc-zoom-btn { background: #21262d; border-color: #30363d; color: #8b949e; }
+  .fc-zoom-btn:active { background: rgba(15,123,108,.2); color: #5eead4; }
+  .fc-zoom-reset { background: none; border-color: #30363d; color: #6e7681; }
+  .fc-vline { background: #30363d; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SCREEN DOKUMEN
+══════════════════════════════════════════════════════════════ */
+
+#screen-docs { background: var(--bg-base, #f1f5f9); min-height: 100vh; }
+
+/* Header */
+.docs-header {
+  padding: 18px 16px 14px;
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+}
+.docs-header-title { font-size: 18px; font-weight: 800; color: #fff; }
+.docs-header-sub   { font-size: 11px; color: rgba(255,255,255,.75); margin-top: 3px; }
+
+/* Search */
+.docs-search-wrap {
+  display: flex; align-items: center; gap: 10px;
+  margin: 10px 14px 0;
+  background: var(--bg-surface,#fff);
+  border: 1px solid var(--border,#e2e8f0);
+  border-radius: 14px; padding: 10px 14px;
+  box-shadow: var(--card-shadow);
+}
+.docs-search-icon  { font-size: 16px; flex-shrink: 0; }
+.docs-search-input {
+  flex: 1; border: none; outline: none;
+  background: transparent; font-family: var(--font);
+  font-size: 14px; color: var(--text-primary,#0f172a);
+}
+.docs-search-input::placeholder { color: var(--text-muted,#94a3b8); }
+.docs-search-clear {
+  background: var(--slate-100,#f1f5f9); border: none;
+  color: var(--text-muted); width: 26px; height: 26px;
+  border-radius: 8px; cursor: pointer; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Category chips */
+.docs-cats {
+  display: flex; gap: 6px; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 14px 2px; scrollbar-width: none;
+}
+.docs-cats::-webkit-scrollbar { display: none; }
+.docs-cat-chip {
+  flex-shrink: 0;
+  background: var(--bg-surface,#fff);
+  border: 1px solid var(--border,#e2e8f0);
+  color: var(--text-secondary,#475569);
+  border-radius: 20px; padding: 5px 12px;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.docs-cat-chip:active { opacity: .8; }
+.docs-cat-active { box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+
+/* Document list */
+.docs-list { padding: 8px 14px 0; display: flex; flex-direction: column; gap: 10px; }
+
+/* Document card */
+.docs-card {
+  background: var(--bg-surface,#fff);
+  border: 1px solid var(--border,#e2e8f0);
+  border-radius: 16px; padding: 14px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer; transition: box-shadow .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.docs-card:active { transform: scale(.99); box-shadow: none; }
+
+.docs-card-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 8px;
+}
+.docs-card-left   { display: flex; align-items: center; gap: 8px; }
+.docs-org-badge {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  border: 1px solid; border-radius: 8px; padding: 3px 8px;
+  letter-spacing: .02em;
+}
+.docs-year { font-size: 11px; color: var(--text-muted,#94a3b8); font-weight: 600; }
+.docs-action-icon { font-size: 18px; }
+
+.docs-card-title {
+  font-size: 14px; font-weight: 800;
+  color: var(--text-primary,#0f172a); line-height: 1.3;
+  margin-bottom: 6px;
+}
+.docs-card-desc {
+  font-size: 12px; color: var(--text-secondary,#64748b);
+  line-height: 1.55; margin-bottom: 8px;
+}
+
+/* Tags */
+.docs-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.docs-tag {
+  font-size: 10px; font-weight: 600;
+  background: var(--slate-100,#f1f5f9);
+  color: var(--text-secondary,#475569);
+  border-radius: 6px; padding: 2px 7px;
+}
+
+/* Action hint */
+.docs-action-hint { display: flex; align-items: center; }
+.docs-hint-read {
+  font-size: 11px; font-weight: 700;
+  color: #0f7b6c; display: flex; align-items: center; gap: 4px;
+}
+.docs-hint-open {
+  font-size: 11px; font-weight: 700;
+  color: #0369a1; display: flex; align-items: center; gap: 4px;
+}
+
+/* Empty state */
+.docs-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; text-align: center;
+}
+.docs-empty-icon { font-size: 40px; opacity: .4; margin-bottom: 12px; }
+.docs-empty-text { font-size: 13px; color: var(--text-muted,#94a3b8); line-height: 1.6; }
+
+/* ── PDF Viewer Overlay ── */
+.docs-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--bg-base, #f1f5f9);
+  display: none;
+  flex-direction: column;
+}
+
+/* ── Top bar ── */
+.docs-viewer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--teal-dark, #0a5a4e);
+  color: white;
+  flex-shrink: 0;
+  min-height: 52px;
+}
+.dvb-title {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.dvb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.dvb-btn:active { background: rgba(255,255,255,.28); }
+.dvb-back { padding: 6px 10px; }
+.dvb-open {
+  background: rgba(255,255,255,.2);
+  border-color: rgba(255,255,255,.4);
+}
+
+/* ── Info strip ── */
+.docs-viewer-info {
+  font-size: 10px;
+  color: var(--teal-dark, #0a5a4e);
+  background: var(--teal-pale, #f0faf8);
+  border-bottom: 1px solid var(--teal-light, #e0f5f2);
+  padding: 5px 14px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+/* ── Loading overlay ── */
+.docs-viewer-loading {
+  position: absolute;
+  top: 52px; left: 0; right: 0; bottom: 0;
+  background: var(--bg-base, #f1f5f9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 5;
+  padding: 20px;
+  text-align: center;
+}
+.docs-loading-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--teal-light, #e0f5f2);
+  border-top-color: var(--teal, #0f7b6c);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.docs-loading-text {
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.docs-loading-text span {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+  max-width: 280px;
+}
+
+/* ── PDF iframe ── */
+.docs-viewer-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+  display: block;
+  transition: opacity .3s;
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  .docs-viewer { background: #0d1117; }
+  .docs-viewer-bar { background: #0a5a4e; }
+  .docs-viewer-info { background: rgba(15,123,108,.12); color: #5eead4; border-color: rgba(15,123,108,.2); }
+  .docs-viewer-loading { background: #0d1117; }
+  .docs-loading-spinner { border-color: #21262d; border-top-color: #14a390; }
+  .docs-loading-text { color: #8b949e; }
+  .docs-loading-text span { color: #6e7681; }
+  .docs-viewer-frame { background: #1e293b; }
+}
+/* ── Docs viewer loading state ── */
+.docs-viewer-loading {
+  position: absolute;
+  top: 52px; left: 0; right: 0; bottom: 0;
+  background: var(--bg-base, #f1f5f9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 2;
+}
+.docs-loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--teal-light, #e0f5f2);
+  border-top-color: var(--teal, #0f7b6c);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.docs-loading-text {
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  text-align: center;
+  line-height: 1.6;
+}
+.docs-loading-text span {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+}
+
+/* ── Docs card badge colors ── */
+.docs-cat-PNPK      { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+.docs-cat-IDAI      { background:#f0fdf4; color:#0f7b6c; border-color:#bbf7d0; }
+.docs-cat-WHO       { background:#eff6ff; color:#0369a1; border-color:#bfdbfe; }
+.docs-cat-AAP       { background:#faf5ff; color:#7c3aed; border-color:#e9d5ff; }
+.docs-cat-Kemenkes  { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+.docs-cat-Farmako   { background:#fffbeb; color:#d97706; border-color:#fde68a; }
+
+/* dark mode for loading */
+@media (prefers-color-scheme: dark) {
+  .docs-viewer-loading { background: #0d1117; }
+  .docs-loading-spinner { border-color: #21262d; border-top-color: var(--teal-mid,#14a390); }
+  .docs-loading-text { color: #8b949e; }
+  .docs-loading-text span { color: #6e7681; }
+}
+
 </style>
 </head>
 <body>
@@ -2143,6 +2686,10 @@ tr:hover td { background:var(--slate-50); }
     <span class="nav-icon">💊</span>
     <span class="nav-label">Dosis Obat</span>
   </button>
+  <button class="nav-btn" id="nav-docs" onclick="showTab('docs')">
+    <span class="nav-icon">📚</span>
+    <span class="nav-label">Dokumen</span>
+  </button>
   <button class="nav-btn" id="nav-about" onclick="showTab('about')">
     <span class="nav-icon">👨‍⚕️</span>
     <span class="nav-label">Tentang</span>
@@ -2243,6 +2790,76 @@ tr:hover td { background:var(--slate-50); }
   <div id="drug-empty" class="drug-empty" style="display:none">
     <div class="drug-empty-icon">🔍</div>
     <div class="drug-empty-text">Obat tidak ditemukan.<br>Coba kata kunci lain.</div>
+  </div>
+
+  <div style="height:90px"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: DOKUMEN
+═══════════════════════════════════════════ -->
+<div id="screen-docs" class="screen">
+
+  <!-- Header -->
+  <div class="docs-header">
+    <div class="docs-header-title">📚 Dokumen Referensi</div>
+    <div class="docs-header-sub">PNPK · IDAI · WHO · AAP · Panduan Klinis</div>
+  </div>
+
+  <!-- Search -->
+  <div class="docs-search-wrap">
+    <span class="docs-search-icon">🔍</span>
+    <input type="text" id="docs-search" class="docs-search-input"
+           placeholder="Cari dokumen... (TB, asma, PNPK...)"
+           oninput="onDocsSearch(this.value)" autocomplete="off">
+    <button id="docs-search-clear" class="docs-search-clear"
+            onclick="clearDocsSearch()" style="display:none">✕</button>
+  </div>
+
+  <!-- Category chips -->
+  <div class="docs-cats" id="docs-cats"></div>
+
+  <!-- Document list -->
+  <div id="docs-list" class="docs-list"></div>
+
+  <!-- PDF Viewer overlay -->
+  <div id="docs-viewer" class="docs-viewer" style="display:none">
+
+    <!-- Top bar -->
+    <div class="docs-viewer-bar">
+      <button class="dvb-btn dvb-back" onclick="closeDocsViewer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Kembali
+      </button>
+      <div class="dvb-title" id="docs-viewer-title">Dokumen</div>
+      <a class="dvb-btn dvb-open" id="docs-viewer-link" href="#" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Buka PDF
+      </a>
+    </div>
+
+    <!-- Info strip -->
+    <div class="docs-viewer-info" id="docs-viewer-info"></div>
+
+    <!-- Loading state -->
+    <div id="docs-viewer-loading" class="docs-viewer-loading">
+      <div class="docs-loading-spinner"></div>
+      <div class="docs-loading-text">
+        Memuat dokumen PDF...
+        <span>Dokumen bersumber dari server resmi (WHO, Kemenkes, dll)</span>
+        <button class="dvb-btn dvb-open" id="docs-fallback-btn" href="#" onclick="openDocFallback()" style="margin-top:10px;display:inline-flex">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Buka langsung di browser
+        </button>
+      </div>
+    </div>
+
+    <!-- Iframe -->
+    <iframe id="docs-viewer-frame" class="docs-viewer-frame"
+            src="about:blank"
+            allow="fullscreen"
+            allowfullscreen></iframe>
+
   </div>
 
   <div style="height:90px"></div>
@@ -9000,6 +9617,10 @@ function showTab(tab) {
     document.getElementById('nav-protocols').classList.add('active');
     showScreen('drug');
     initDrugCalculator();
+  } else if (tab === 'docs') {
+    document.getElementById('nav-docs').classList.add('active');
+    showScreen('docs');
+    initDocs();
   } else if (tab === 'about') {
     document.getElementById('nav-about').classList.add('active');
     showScreen('about');
@@ -12701,173 +13322,162 @@ function resetMCHAT() {
 // ════════════════════════════════════════════════════════════════
 
 // ── 1. Build graph structure ────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// FLOWCHART RENDERER v3 — SVG-based, pixel-perfect, zoomable
+// Layout: proper guideline-style top→down flowchart
+// Features: zoom/pan, download PNG, proper connector lines
+// ════════════════════════════════════════════════════════════════
+
+// ── Tone helpers ─────────────────────────────────────────────
+function toneColor(t) {
+  var m = { danger:'#dc2626', warning:'#d97706', success:'#16a34a', neutral:'#0369a1' };
+  return m[t] || m.neutral;
+}
+function toneBg(t) {
+  var m = { danger:'#fef2f2', warning:'#fffbeb', success:'#f0fdf4', neutral:'#eff6ff' };
+  return m[t] || m.neutral;
+}
+function toneBorder(t) {
+  var m = { danger:'#fca5a5', warning:'#fde68a', success:'#86efac', neutral:'#93c5fd' };
+  return m[t] || '#e2e8f0';
+}
+
+// ── Build graph ───────────────────────────────────────────────
 function buildFlowGraph(block) {
   if (!block || !block.nodes || !block.entry) return null;
   var nodes = block.nodes;
-  var edges = []; // {from, to, label, tone}
-  var nodeList = {}; // id → {id, title, action, showF, terminal, tone}
-
-  // Collect all nodes
+  var edges = [];
+  var nodeList = {};
   var keys = Object.keys(nodes);
   for (var i = 0; i < keys.length; i++) {
-    var id = keys[i];
-    var n  = nodes[id];
+    var id  = keys[i];
+    var n   = nodes[id];
     var brs = n.branches || [];
     nodeList[id] = {
-      id:       id,
-      title:    n.title  || id,
-      action:   n.action || n.body || '',
-      showF:    n.showF  || [],
+      id: id, title: n.title || id,
+      action: n.action || n.body || '',
+      showF: n.showF || [],
       terminal: brs.length === 0,
       branches: brs
     };
     for (var j = 0; j < brs.length; j++) {
-      edges.push({ from: id, to: brs[j].next, label: brs[j].l, tone: brs[j].t || 'neutral' });
+      edges.push({ from: id, to: brs[j].next, label: brs[j].l || '', tone: brs[j].t || 'neutral' });
     }
   }
-
   return { entry: block.entry, nodes: nodeList, edges: edges, formulas: block.formulas || {} };
 }
 
-// ── 2. Layout: BFS level assignment ─────────────────────────
+// ── Layout: Sugiyama-inspired layered layout ──────────────────
 function layoutGraph(graph) {
   if (!graph) return null;
-  var nodes   = graph.nodes;
-  var entry   = graph.entry;
-  var edges   = graph.edges;
+  var nodes = graph.nodes;
+  var entry = graph.entry;
+  var edges = graph.edges;
 
-  // Build adjacency: from→[to]
-  var adj = {};
+  // Build adjacency
+  var adj  = {};   // from → [to]
+  var radj = {};   // to   → [from]
   for (var i = 0; i < edges.length; i++) {
     var e = edges[i];
-    if (!adj[e.from]) adj[e.from] = [];
+    if (!adj[e.from])  adj[e.from]  = [];
+    if (!radj[e.to])   radj[e.to]   = [];
     adj[e.from].push(e.to);
+    radj[e.to].push(e.from);
   }
 
-  // BFS to assign depth (row) and order (col)
-  var depth   = {}; // id → row
+  // BFS layer assignment from entry
+  var layer   = {};
   var visited = {};
-  var queue   = [entry];
-  depth[entry] = 0;
+  var queue   = [{ id: entry, depth: 0 }];
+  layer[entry] = 0;
+  var maxLayer = 0;
 
   while (queue.length > 0) {
-    var cur = queue.shift();
+    var item = queue.shift();
+    var cur  = item.id;
     if (visited[cur]) continue;
     visited[cur] = true;
     var children = adj[cur] || [];
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
-      if (depth[child] === undefined) {
-        depth[child] = depth[cur] + 1;
+      var newDepth = layer[cur] + 1;
+      if (layer[child] === undefined || layer[child] < newDepth) {
+        layer[child] = newDepth;
       }
-      if (!visited[child]) queue.push(child);
+      if (!visited[child]) queue.push({ id: child, depth: layer[child] });
+      if (layer[child] > maxLayer) maxLayer = layer[child];
     }
   }
 
-  // Group nodes by depth (row)
+  // Handle nodes not reachable from entry (orphans)
+  var allIds = Object.keys(nodes);
+  for (var i = 0; i < allIds.length; i++) {
+    if (layer[allIds[i]] === undefined) layer[allIds[i]] = maxLayer + 1;
+  }
+
+  // Group by layer, sort siblings by order in entry branch list
   var rows = {};
-  var maxDepth = 0;
-  var ids = Object.keys(nodes);
-  for (var i = 0; i < ids.length; i++) {
-    var id = ids[i];
-    var d = depth[id] !== undefined ? depth[id] : 999;
-    if (!rows[d]) rows[d] = [];
-    rows[d].push(id);
-    if (d > maxDepth && d < 999) maxDepth = d;
+  for (var i = 0; i < allIds.length; i++) {
+    var id  = allIds[i];
+    var l   = layer[id];
+    if (!rows[l]) rows[l] = [];
+    rows[l].push(id);
   }
 
-  // Assign column positions within each row
-  var positions = {}; // id → {row, col, totalInRow}
-  var rowKeys = Object.keys(rows).sort(function(a,b){return parseInt(a)-parseInt(b);});
+  // Order each row: children of same parent stay adjacent, left-to-right
+  var rowKeys = Object.keys(rows).map(Number).sort(function(a,b){return a-b;});
   for (var ri = 0; ri < rowKeys.length; ri++) {
-    var row  = rowKeys[ri];
-    var rowNodes = rows[row];
-    for (var ci = 0; ci < rowNodes.length; ci++) {
-      positions[rowNodes[ci]] = { row: parseInt(row), col: ci, totalInRow: rowNodes.length };
-    }
-  }
-
-  return { positions: positions, rows: rows, rowKeys: rowKeys, maxDepth: maxDepth, adj: adj };
-}
-
-// ── 3. Tone helpers ──────────────────────────────────────────
-function toneColor(t) {
-  var map = { danger:'#dc2626', warning:'#d97706', success:'#16a34a', neutral:'#0369a1' };
-  return map[t] || map.neutral;
-}
-function toneBg(t) {
-  var map = { danger:'#fff1f2', warning:'#fffbeb', success:'#f0fdf4', neutral:'#eff6ff' };
-  return map[t] || map.neutral;
-}
-function toneBorder(t) {
-  var map = { danger:'#fecaca', warning:'#fde68a', success:'#bbf7d0', neutral:'#bfdbfe' };
-  return map[t] || map.border;
-}
-
-// ── 4. Render node box ───────────────────────────────────────
-function renderFlowNode(node, pos, formulas) {
-  var isEntry    = pos.row === 0;
-  var isTerminal = node.terminal;
-
-  // Node tone based on terminal/entry/action
-  var bg = isTerminal ? '#f0fdf4' : isEntry ? 'linear-gradient(135deg,var(--teal),var(--teal-dark))' : '#fff';
-  var border = isTerminal ? '#86efac' : isEntry ? 'transparent' : '#e2e8f0';
-  var titleColor = isEntry ? '#fff' : '#0f172a';
-  var shape = isTerminal ? 'border-radius:24px' : isEntry ? 'border-radius:16px' : 'border-radius:12px';
-  var topIcon = isEntry ? '⬟ ' : isTerminal ? '✓ ' : '';
-
-  var html = '<div class="fc-node' + (isEntry?' fc-node-entry':'') + (isTerminal?' fc-node-terminal':'') + '"'
-    + ' style="background:' + bg + ';border:2px solid ' + border + ';' + shape + '">'
-
-    // Title
-    + '<div class="fc-node-title" style="color:' + titleColor + '">'
-    + topIcon + node.title + '</div>';
-
-  // Action (collapsed by default on overview, show abbreviated)
-  if (node.action) {
-    var actionShort = node.action.length > 120 ? node.action.substring(0,117) + '…' : node.action;
-    html += '<div class="fc-node-action">' + actionShort + '</div>';
-  }
-
-  // Drug pills (compact)
-  if (node.showF && node.showF.length > 0 && formulas) {
-    html += '<div class="fc-node-drugs">';
-    for (var i = 0; i < node.showF.length; i++) {
-      var f = formulas[node.showF[i]];
-      if (f) {
-        html += '<div class="fc-drug-chip">💊 ' + f.label + '</div>';
+    var rowL = rowKeys[ri];
+    if (rowL === 0) continue;
+    rows[rowL].sort(function(a, b) {
+      // Sort by parent's branch order
+      var parentA = (radj[a] || [])[0];
+      var parentB = (radj[b] || [])[0];
+      if (parentA === parentB && parentA) {
+        var brs = nodes[parentA] ? (nodes[parentA].branches || []) : [];
+        var ia = -1, ib = -1;
+        for (var k = 0; k < brs.length; k++) {
+          if (brs[k].next === a) ia = k;
+          if (brs[k].next === b) ib = k;
+        }
+        return ia - ib;
       }
-    }
-    html += '</div>';
+      return 0;
+    });
   }
 
-  html += '</div>';
-  return html;
+  // Assign column positions
+  var positions = {};
+  for (var ri = 0; ri < rowKeys.length; ri++) {
+    var rowL    = rowKeys[ri];
+    var rowIds  = rows[rowL];
+    for (var ci = 0; ci < rowIds.length; ci++) {
+      positions[rowIds[ci]] = { row: rowL, col: ci, totalInRow: rowIds.length };
+    }
+  }
+
+  return {
+    positions: positions, rows: rows,
+    rowKeys: rowKeys.map(String), maxLayer: maxLayer,
+    adj: adj, radj: radj, layer: layer
+  };
 }
 
-// ── 5. Main flowchart renderer ───────────────────────────────
-function renderAlgoFlowchart(block, containerId) {
+// ── Render full flowchart as scrollable HTML ──────────────────
+function renderAlgoFlowchart(block) {
   var graph  = buildFlowGraph(block);
   var layout = layoutGraph(graph);
   if (!graph || !layout) return '<div class="fc-error">Tidak ada data alur.</div>';
 
-  var nodes    = graph.nodes;
-  var edges    = graph.edges;
-  var formulas = graph.formulas || {};
+  var nodes     = graph.nodes;
+  var edges     = graph.edges;
+  var formulas  = graph.formulas || {};
   var positions = layout.positions;
-  var rowKeys  = layout.rowKeys;
+  var rowKeys   = layout.rowKeys;
+  var adj       = layout.adj;
+  var radj      = layout.radj;
 
-  // Build: parentOf[childId] = parentId (for connector line logic)
-  var parentOf = {};
-  var childrenOf = {};
-  for (var ei = 0; ei < edges.length; ei++) {
-    var e = edges[ei];
-    if (!parentOf[e.to]) parentOf[e.to] = e.from;
-    if (!childrenOf[e.from]) childrenOf[e.from] = [];
-    childrenOf[e.from].push(e.to);
-  }
-
-  // Build: edgeLabel[fromId][toId] = {label, tone}
+  // Build edge lookup: edgeMap[from][to] = {label,tone}
   var edgeMap = {};
   for (var ei = 0; ei < edges.length; ei++) {
     var e = edges[ei];
@@ -12875,92 +13485,182 @@ function renderAlgoFlowchart(block, containerId) {
     edgeMap[e.from][e.to] = { label: e.label, tone: e.tone };
   }
 
-  var html = '<div class="fc-wrap">';
-
-  for (var ri = 0; ri < rowKeys.length; ri++) {
-    var rowKey  = rowKeys[ri];
-    var rowIds  = layout.rows[rowKey];
-    if (!rowIds || rowIds.length === 0) continue;
-
-    // ── CONNECTOR ROW: lines from parent → children ──────────
-    if (ri > 0) {
-      html += '<div class="fc-connector-row">';
-      for (var ci = 0; ci < rowIds.length; ci++) {
-        var childId  = rowIds[ci];
-        var parentId = parentOf[childId];
-        var edgeInfo = parentId && edgeMap[parentId] ? edgeMap[parentId][childId] : null;
-        var ec       = edgeInfo ? toneColor(edgeInfo.tone) : '#94a3b8';
-        var label    = edgeInfo ? edgeInfo.label : '';
-
-        html += '<div class="fc-conn-col">';
-        html += '<div class="fc-conn-vert" style="border-color:' + ec + '"></div>';
-        if (label) {
-          html += '<div class="fc-conn-badge" style="color:' + ec
-            + ';background:' + toneBg(edgeInfo.tone) + ';border-color:' + ec + '">'
-            + label + '</div>';
-          html += '<div class="fc-conn-vert2" style="border-color:' + ec + '"></div>';
-        }
-        html += '<div class="fc-conn-arrow-down" style="color:' + ec + '">▼</div>';
-        html += '</div>';
-      }
-      html += '</div>'; // end fc-connector-row
-
-      // ── Horizontal bridge line when siblings share a parent ──
-      var parentIds = {};
-      for (var ci = 0; ci < rowIds.length; ci++) {
-        var pid = parentOf[rowIds[ci]];
-        if (pid) { if (!parentIds[pid]) parentIds[pid] = []; parentIds[pid].push(ci); }
-      }
-      var hasSiblings = false;
-      var pkeys = Object.keys(parentIds);
-      for (var pk = 0; pk < pkeys.length; pk++) {
-        if (parentIds[pkeys[pk]].length > 1) { hasSiblings = true; break; }
-      }
-      if (hasSiblings) {
-        html += '<div class="fc-hbridge-row">';
-        for (var ci = 0; ci < rowIds.length; ci++) {
-          var childId = rowIds[ci];
-          var pid     = parentOf[childId];
-          var siblings = pid ? (parentIds[pid] || []) : [];
-          var isFirst  = siblings.length > 0 && siblings[0] === ci;
-          var isLast   = siblings.length > 0 && siblings[siblings.length-1] === ci;
-          var isMiddle = siblings.length > 1 && !isFirst && !isLast;
-          var isSingle = siblings.length <= 1;
-          var ec = '#94a3b8';
-          if (edgeMap[pid] && edgeMap[pid][childId]) {
-            ec = toneColor(edgeMap[pid][childId].tone);
-          }
-          html += '<div class="fc-hbridge-cell'
-            + (isSingle ? ' fc-hb-single' : '')
-            + (isFirst  ? ' fc-hb-first'  : '')
-            + (isLast   ? ' fc-hb-last'   : '')
-            + (isMiddle ? ' fc-hb-middle' : '') + '">'
-            + '<div class="fc-hb-line" style="'
-            + (isSingle ? 'visibility:hidden' :
-               isFirst  ? 'margin-left:50%;border-color:' + ec :
-               isLast   ? 'margin-right:50%;border-color:' + ec :
-                          'border-color:' + ec) + '"></div>'
-            + '</div>';
-        }
-        html += '</div>'; // end fc-hbridge-row
-      }
-    }
-
-    // ── NODE ROW ─────────────────────────────────────────────
-    html += '<div class="fc-row">';
-    for (var ci = 0; ci < rowIds.length; ci++) {
-      var id   = rowIds[ci];
-      var node = nodes[id];
-      var pos  = positions[id];
-      if (!node) continue;
-      html += '<div class="fc-col">' + renderFlowNode(node, pos, formulas) + '</div>';
-    }
-    html += '</div>'; // end fc-row
+  // Build parentOf: first parent from radj
+  var parentOf = {};
+  for (var id in radj) {
+    if (radj[id] && radj[id].length > 0) parentOf[id] = radj[id][0];
   }
 
-  html += '</div>'; // end fc-wrap
+  // ── NODE BOX RENDERER ────────────────────────────────────
+  function nodeBox(id) {
+    var node = nodes[id];
+    if (!node) return '';
+    var pos  = positions[id];
+    var isEntry    = pos.row === 0;
+    var isTerminal = node.terminal;
+
+    // Colors
+    var bg, border, titleCol, shape, badge;
+    if (isEntry) {
+      bg = 'linear-gradient(135deg,#0f7b6c,#0a5a4e)';
+      border = 'none'; titleCol = '#fff'; shape = '16px'; badge = '';
+    } else if (isTerminal) {
+      bg = '#f0fdf4'; border = '2px solid #86efac';
+      titleCol = '#15803d'; shape = '24px'; badge = '✅ ';
+    } else {
+      var hasBranches = node.branches && node.branches.length > 0;
+      // Decision diamond shape approximated by card with colored left bar
+      bg = '#fff'; border = '1px solid #e2e8f0';
+      titleCol = '#0f172a'; shape = '12px'; badge = '';
+      if (hasBranches) {
+        // Decision node — amber left accent
+        border = '1px solid #e2e8f0';
+      }
+    }
+
+    var isDecision = !isEntry && !isTerminal && node.branches && node.branches.length > 1;
+
+    var html = '<div class="fc-node" id="fcn-' + id + '"'
+      + ' style="background:' + bg + ';border:' + border + ';border-radius:' + shape + ';'
+      + (isDecision ? 'border-left:4px solid #d97706;' : '')
+      + '">';
+
+    // Title bar
+    html += '<div class="fc-node-title" style="color:' + titleCol + '">'
+      + badge + node.title + '</div>';
+
+    // Action text
+    if (node.action) {
+      var txt = node.action.length > 200 ? node.action.substring(0,197) + '…' : node.action;
+      html += '<div class="fc-node-body">' + txt + '</div>';
+    }
+
+    // Drug pills
+    if (node.showF && node.showF.length > 0) {
+      html += '<div class="fc-node-drugs">';
+      for (var i = 0; i < node.showF.length; i++) {
+        var f = formulas[node.showF[i]];
+        if (f) html += '<div class="fc-drug-tag">💊 ' + f.label + '</div>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  // ── EDGE LABEL BETWEEN NODES ─────────────────────────────
+  function edgeLabel(fromId, toId) {
+    if (!edgeMap[fromId] || !edgeMap[fromId][toId]) return '';
+    var info = edgeMap[fromId][toId];
+    var col  = toneColor(info.tone);
+    var bg2  = toneBg(info.tone);
+    var bdr  = toneBorder(info.tone);
+    return '<div class="fc-elabel" style="color:' + col + ';background:' + bg2 + ';border-color:' + bdr + '">'
+      + info.label + '</div>';
+  }
+
+  // ── BUILD ROWS ────────────────────────────────────────────
+  var html = '<div class="fc-chart">';
+
+  for (var ri = 0; ri < rowKeys.length; ri++) {
+    var rowL   = rowKeys[ri];
+    var rowIds = layout.rows[parseInt(rowL)] || layout.rows[rowL] || [];
+    if (!rowIds || rowIds.length === 0) continue;
+
+    // ── CONNECTOR SECTION (above this row, except row 0) ───
+    if (ri > 0) {
+      // For each node in this row, draw incoming connector
+      // Group siblings by parent
+      var byParent = {};
+      for (var ci = 0; ci < rowIds.length; ci++) {
+        var pid = parentOf[rowIds[ci]] || '__none__';
+        if (!byParent[pid]) byParent[pid] = [];
+        byParent[pid].push(rowIds[ci]);
+      }
+
+      html += '<div class="fc-connector-section">';
+
+      // For each parent group, render the fork
+      for (var pid in byParent) {
+        var siblings = byParent[pid];
+        if (pid === '__none__') {
+          // Orphan nodes — just vertical line
+          for (var si = 0; si < siblings.length; si++) {
+            html += '<div class="fc-col-wrap" data-col="' + siblings[si] + '">'
+              + '<div class="fc-vline"></div>'
+              + '</div>';
+          }
+          continue;
+        }
+
+        if (siblings.length === 1) {
+          // Single child — straight vertical line + label
+          var child = siblings[0];
+          var info = edgeMap[pid] ? edgeMap[pid][child] : null;
+          html += '<div class="fc-col-wrap" data-col="' + child + '">';
+          html += '<div class="fc-connector-single">';
+          html += '<div class="fc-vline"></div>';
+          if (info && info.label) {
+            html += '<div class="fc-elabel" style="color:'
+              + toneColor(info.tone) + ';background:'
+              + toneBg(info.tone) + ';border-color:'
+              + toneBorder(info.tone) + '">' + info.label + '</div>';
+            html += '<div class="fc-vline" style="background:' + toneColor(info.tone) + '"></div>';
+          }
+          html += '<div class="fc-arrow" style="color:#94a3b8">▼</div>';
+          html += '</div></div>';
+        } else {
+          // Multiple children — horizontal fork
+          // First: vertical line from parent center downward to fork level
+          // Then: horizontal bar
+          // Then: vertical lines down to each child + labels
+          html += '<div class="fc-fork-group">';
+          // Horizontal bar spans all siblings
+          html += '<div class="fc-fork-hbar">';
+          for (var si = 0; si < siblings.length; si++) {
+            var child = siblings[si];
+            var info  = edgeMap[pid] ? edgeMap[pid][child] : null;
+            var col   = info ? toneColor(info.tone) : '#94a3b8';
+            var isFirst  = si === 0;
+            var isLast   = si === siblings.length - 1;
+            var isMid    = !isFirst && !isLast;
+            html += '<div class="fc-fork-col">'
+              // H-bar segment
+              + '<div class="fc-hbar-seg'
+              + (isFirst ? ' fc-hbar-first' : isLast ? ' fc-hbar-last' : ' fc-hbar-mid')
+              + '" style="border-color:' + col + '"></div>'
+              // Vertical drop
+              + '<div class="fc-vline-drop" style="border-color:' + col + '"></div>'
+              // Edge label
+              + (info && info.label ? '<div class="fc-elabel" style="color:'
+                  + col + ';background:' + toneBg(info.tone) + ';border-color:'
+                  + toneBorder(info.tone) + '">' + info.label + '</div>'
+                  + '<div class="fc-vline-drop" style="border-color:' + col + '"></div>' : '')
+              // Arrow
+              + '<div class="fc-arrow" style="color:' + col + '">▼</div>'
+              + '</div>';
+          }
+          html += '</div>'; // fc-fork-hbar
+          html += '</div>'; // fc-fork-group
+        }
+      }
+      html += '</div>'; // fc-connector-section
+    }
+
+    // ── NODE ROW ───────────────────────────────────────────
+    html += '<div class="fc-row" data-row="' + rowL + '">';
+    for (var ci = 0; ci < rowIds.length; ci++) {
+      html += '<div class="fc-col-wrap">' + nodeBox(rowIds[ci]) + '</div>';
+    }
+    html += '</div>'; // fc-row
+  }
+
+  html += '</div>'; // fc-chart
   return html;
 }
+
+
 
 // ── Main: render Must Know Box with full overview ───────────
 function renderMustKnowBox(innerHtml, algoBlocks) {
@@ -12978,10 +13678,20 @@ function renderMustKnowBox(innerHtml, algoBlocks) {
         + '<span class="ov-section-icon">🗺️</span>' + ab.title + '</div>';
     }
     var fcTitle = (currentProtocol ? currentProtocol.title : '') + ' — ' + (ab.title || 'Alur');
+    var fcId = 'fcw' + ai;
+    overviewSections += '<div class="fc-toolbar">' 
+      + '<button class="fc-zoom-btn" onclick="fcZoom(\'' + fcId + '\',-1)">−</button>'
+      + '<span class="fc-zoom-label" id="' + fcId + '-zl">100%</span>'
+      + '<button class="fc-zoom-btn" onclick="fcZoom(\'' + fcId + '\',1)">+</button>'
+      + '<button class="fc-zoom-reset" onclick="fcZoomReset(\'' + fcId + '\')">&circlearrowleft; Reset</button>'
+      + '<button class="fc-download-btn" style="margin:0" data-dltitle="' + fcTitle.replace(/"/g,'') + '" onclick="handleFlowchartDownload(this)">'
+      + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PNG</button>'
+      + '</div>'
+      + '<div class="fc-chart-wrap" id="' + fcId + '"'
+      + ' onwheel="fcWheelZoom(event,\'' + fcId + '\')">';
+    overviewSections += '<div class="fc-hint">🔍 Scroll/cubit = zoom &nbsp;|&nbsp; Geser = pan</div>';
     overviewSections += renderAlgoFlowchart(ab);
-        overviewSections += '<button class="fc-download-btn" data-dltitle="' + fcTitle.replace(/"/g,'') + '" onclick="handleFlowchartDownload(this)">'
-      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
-      + ' Download Bagan PNG</button>';
+    overviewSections += '</div>';
     overviewSections += '</div>';
   }
 
@@ -13044,18 +13754,22 @@ function handleFlowchartDownload(btn) {
 function downloadFlowchart(btnEl, title) {
   var btn = btnEl;
   var container = null;
-  // Walk up to find fc-wrap
+  // Walk up to find fc-chart-wrap or fc-wrap
   var parent = btn.parentNode;
-  for (var i = 0; i < 10 && parent; i++) {
-    var fc = parent.querySelector ? parent.querySelector('.fc-wrap') : null;
+  for (var i = 0; i < 12 && parent; i++) {
+    var fc = parent.querySelector ? (parent.querySelector('.fc-chart') || parent.querySelector('.fc-chart-wrap')) : null;
     if (fc) { container = fc; break; }
+    // Also check if this element IS the chart container
+    if (parent.className && (parent.className.indexOf('fc-chart-wrap') >= 0 || parent.className.indexOf('fc-chart') >= 0)) {
+      container = parent; break;
+    }
     parent = parent.parentNode;
     if (!parent || parent === document.body) break;
   }
-  // Also check algo-card
+  // Fallback: algo card
   if (!container && btn.parentNode) {
     var algoCard = btn.closest ? btn.closest('.card') : null;
-    if (algoCard) container = algoCard.querySelector('.algo-node') || algoCard;
+    if (algoCard) container = algoCard.querySelector('.fc-chart') || algoCard;
   }
   if (!container) {
     alert('Tidak dapat menemukan bagan. Coba scroll ke bagan terlebih dahulu.');
@@ -13113,6 +13827,643 @@ function downloadFlowchartSVG(container, title, btn) {
     setTimeout(function(){ btn.textContent = '📥 Download Bagan PNG'; }, 3000);
   }
 }
+
+
+// ════════════════════════════════════════════════════════════════
+// FLOWCHART ZOOM & PAN
+// ════════════════════════════════════════════════════════════════
+var _fcZoom    = {};   // id → scale (0.3 – 3.0)
+var _fcPan     = {};   // id → {x, y, dragging, startX, startY, scrollLeft, scrollTop}
+
+function fcGetScale(id) { return _fcZoom[id] || 1.0; }
+
+function fcApplyScale(id) {
+  var wrap  = document.getElementById(id);
+  if (!wrap) return;
+  var chart = wrap.querySelector('.fc-chart');
+  if (!chart) return;
+  var sc = fcGetScale(id);
+  chart.style.transform = 'scale(' + sc + ')';
+  chart.style.transformOrigin = 'top center';
+  // Update label
+  var lbl = document.getElementById(id + '-zl');
+  if (lbl) lbl.textContent = Math.round(sc * 100) + '%';
+}
+
+function fcZoom(id, dir) {
+  var sc = fcGetScale(id);
+  sc = dir > 0 ? Math.min(sc + 0.15, 3.0) : Math.max(sc - 0.15, 0.3);
+  _fcZoom[id] = Math.round(sc * 100) / 100;
+  fcApplyScale(id);
+}
+
+function fcZoomReset(id) {
+  _fcZoom[id] = 1.0;
+  fcApplyScale(id);
+  var wrap = document.getElementById(id);
+  if (wrap) { wrap.scrollLeft = 0; wrap.scrollTop = 0; }
+}
+
+function fcWheelZoom(e, id) {
+  if (!e.ctrlKey && !e.metaKey) return; // only zoom when Ctrl held
+  e.preventDefault();
+  var dir = e.deltaY < 0 ? 1 : -1;
+  fcZoom(id, dir);
+}
+
+function fcPanStart(e, id) {
+  if (e.button !== 0) return;
+  var wrap = document.getElementById(id);
+  if (!wrap) return;
+  _fcPan[id] = { dragging: true, startX: e.clientX, startY: e.clientY,
+    scrollLeft: wrap.scrollLeft, scrollTop: wrap.scrollTop };
+  wrap.style.cursor = 'grabbing';
+  e.preventDefault();
+}
+
+// Touch pan
+function fcTouchStart(e, id) {
+  if (e.touches.length === 1) {
+    var t = e.touches[0];
+    var wrap = document.getElementById(id);
+    if (!wrap) return;
+    _fcPan[id] = { dragging: true, touch: true, startX: t.clientX, startY: t.clientY,
+      scrollLeft: wrap.scrollLeft, scrollTop: wrap.scrollTop };
+  } else if (e.touches.length === 2) {
+    // Pinch zoom
+    _fcPan[id] = _fcPan[id] || {};
+    _fcPan[id].pinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    _fcPan[id].pinchScale = fcGetScale(id);
+  }
+}
+
+document.addEventListener('mousemove', function(e) {
+  for (var id in _fcPan) {
+    var p = _fcPan[id];
+    if (!p || !p.dragging || p.touch) continue;
+    var wrap = document.getElementById(id);
+    if (!wrap) continue;
+    wrap.scrollLeft = p.scrollLeft - (e.clientX - p.startX);
+    wrap.scrollTop  = p.scrollTop  - (e.clientY - p.startY);
+  }
+});
+document.addEventListener('mouseup', function() {
+  for (var id in _fcPan) {
+    if (_fcPan[id] && !_fcPan[id].touch) {
+      _fcPan[id].dragging = false;
+      var wrap = document.getElementById(id);
+      if (wrap) wrap.style.cursor = 'grab';
+    }
+  }
+});
+document.addEventListener('touchmove', function(e) {
+  for (var id in _fcPan) {
+    var p = _fcPan[id];
+    if (!p || !p.dragging) continue;
+    if (e.touches.length === 1 && p.touch) {
+      var wrap = document.getElementById(id);
+      if (!wrap) continue;
+      var t = e.touches[0];
+      wrap.scrollLeft = p.scrollLeft - (t.clientX - p.startX);
+      wrap.scrollTop  = p.scrollTop  - (t.clientY - p.startY);
+      e.preventDefault();
+    } else if (e.touches.length === 2 && p.pinchDist !== undefined) {
+      var d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      var sc = Math.max(0.3, Math.min(3.0, p.pinchScale * d / p.pinchDist));
+      _fcZoom[id] = Math.round(sc * 100) / 100;
+      fcApplyScale(id);
+      e.preventDefault();
+    }
+  }
+}, { passive: false });
+document.addEventListener('touchend', function() {
+  for (var id in _fcPan) { if (_fcPan[id]) _fcPan[id].dragging = false; }
+});
+
+// ════════════════════════════════════════════════════════════════
+// DOKUMEN REFERENSI — External documents viewer
+// Data disimpan EXTERNAL (GitHub raw / Google Drive / direct URL)
+// App hanya menyimpan metadata (judul, URL, kategori)
+// ════════════════════════════════════════════════════════════════
+
+// ── Document database ─────────────────────────────────────────
+// URL harus publicly accessible (PDF direct link atau Google Drive embed)
+var DOCS_DB = [
+
+// ══════════════════════════════════════════════════════════
+// PNPK — Panduan Nasional Praktik Klinik (Kemenkes RI)
+// ══════════════════════════════════════════════════════════
+  {id:'pnpk-tb', title:'PMK No.67/2016: Penanggulangan Tuberkulosis', org:'Kemenkes RI', year:'2016', cat:'PNPK',
+   desc:'Peraturan Menteri Kesehatan tentang penanggulangan TB: TB anak, TB MDR, diagnosis, pengobatan OAT.',
+   tags:['TB','tuberkulosis','OAT','MDR','anak','paru'], embed:true,
+   url:'https://hukor.kemkes.go.id/uploads/produk_hukum/PMK_No__67_Th_2016_ttg_Penanggulangan_Tuberkulosis.pdf'},
+
+  {id:'pnpk-dbd', title:'PNPK Tatalaksana Demam Berdarah Dengue', org:'Kemenkes RI / P2PM', year:'2017', cat:'PNPK',
+   desc:'Panduan nasional tatalaksana DBD anak dan dewasa: klasifikasi WHO, manajemen cairan, tanda bahaya.',
+   tags:['dengue','DBD','trombosit','cairan','syok','demam'], embed:true,
+   url:'https://p2pm.kemkes.go.id/storage/documents/DMwUAVWIDyV6HFDkL9oBX5viqnWS4GBjhFxwCkQK.pdf'},
+
+  {id:'pnpk-gizi-buruk', title:'PMK No.29/2019: Penanggulangan Masalah Gizi Anak', org:'Kemenkes RI', year:'2019', cat:'PNPK',
+   desc:'Panduan gizi buruk pada anak: SAM, MAM, 10 langkah tatalaksana, F75, F100, RUTF, komplikasi.',
+   tags:['SAM','gizi buruk','malnutrisi','F75','F100','kwashiorkor','marasmus'], embed:true,
+   url:'https://hukor.kemkes.go.id/uploads/produk_hukum/PMK_No__29_Th_2019_ttg_Penanggulangan_Masalah_Gizi_Bagi_Anak_Akibat_Penyakit.pdf'},
+
+  {id:'pnpk-sepsis', title:'Pedoman Tatalaksana Sepsis & Syok Septik', org:'Kemenkes RI / PERDICI', year:'2020', cat:'PNPK',
+   desc:'Panduan sepsis dan syok sepsis: definisi Sepsis-3, bundle penatalaksanaan, antibiotik, vasopresor.',
+   tags:['sepsis','syok','antibiotik','ICU','bundle','vasopresor'], embed:false,
+   url:'https://www.sccm.org/Research/Guidelines/Guidelines/Surviving-Sepsis-Campaign-International-Guidelines'},
+
+  {id:'pnpk-dm', title:'PNPK Diabetes Mellitus Tipe 2', org:'Kemenkes RI / PERKENI', year:'2019', cat:'PNPK',
+   desc:'Panduan DM tipe 2 termasuk aspek pediatrik: target GD, OAD, insulin, komplikasi akut dan kronik.',
+   tags:['DM','diabetes','insulin','gula darah','HbA1c','OAD'], embed:false,
+   url:'https://perkeni.net/panduan-pengelolaan-dan-pencegahan-diabetes-melitus-tipe-2/'},
+
+  {id:'pnpk-thalassemia', title:'Pedoman Tatalaksana Thalassemia pada Anak', org:'IDAI / Kemenkes', year:'2018', cat:'PNPK',
+   desc:'Panduan thalassemia: transfusi, kelasi besi (deferoksamin, deferipron, deferasiroks), splenektomi.',
+   tags:['thalassemia','transfusi','kelasi besi','anemia','hemoglobin','splenektomi'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/hematologi/thalassemia-pada-anak'},
+
+  {id:'pnpk-epilepsi', title:'PNPK Epilepsi', org:'PERDOSSI / Kemenkes', year:'2020', cat:'PNPK',
+   desc:'Panduan nasional epilepsi: klasifikasi ILAE 2017, pemilihan OAE per tipe kejang, status epileptikus.',
+   tags:['epilepsi','kejang','OAE','EEG','status epileptikus','ILAE'], embed:false,
+   url:'https://perdossi.or.id/dokumen-perdossi/panduan-praktik-klinis'},
+
+// ══════════════════════════════════════════════════════════
+// IDAI — Ikatan Dokter Anak Indonesia
+// ══════════════════════════════════════════════════════════
+  {id:'idai-asma', title:'Rekomendasi IDAI: Tatalaksana Asma pada Anak', org:'IDAI', year:'2021', cat:'IDAI',
+   desc:'Panduan klinis asma anak IDAI: klasifikasi, SABA, ICS, step therapy, monitoring, edukasi orang tua.',
+   tags:['asma','SABA','ICS','bronkodilator','serangan','anak'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/asma-pada-anak'},
+
+  {id:'idai-imunisasi', title:'Jadwal Imunisasi IDAI 2023', org:'IDAI', year:'2023', cat:'IDAI',
+   desc:'Jadwal imunisasi anak terbaru IDAI 2023: wajib, anjuran, catch-up, vaksin khusus kondisi tertentu.',
+   tags:['imunisasi','vaksin','jadwal','PCV','MMR','HPV','rotavirus'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/pengobatan/jadwal-imunisasi-idai-2023'},
+
+  {id:'idai-kejang-demam', title:'Rekomendasi IDAI: Tatalaksana Kejang Demam', org:'IDAI', year:'2016', cat:'IDAI',
+   desc:'Panduan kejang demam: definisi, klasifikasi KDS/KDK, tatalaksana akut, profilaksis, edukasi keluarga.',
+   tags:['kejang demam','KDS','KDK','diazepam','fenobarbital','profilaksis'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/kejang-demam-pada-anak'},
+
+  {id:'idai-tb', title:'Panduan IDAI: Tuberkulosis pada Anak', org:'IDAI', year:'2022', cat:'IDAI',
+   desc:'Panduan TB anak IDAI: sistem skoring, diagnosis, regimen OAT, TB laten, TB meningitis, efek samping.',
+   tags:['TB','tuberkulosis','OAT','skoring','meningitis TB','BCG'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/pengobatan/tata-laksana-tuberkulosis-anak'},
+
+  {id:'idai-neonatus', title:'Panduan Praktik Klinis IDAI: Perinatologi & Neonatologi', org:'IDAI', year:'2022', cat:'IDAI',
+   desc:'Panduan neonatologi IDAI: resusitasi neonatus, hiperbilirubinemia, distres napas, BBLR, infeksi neonatus.',
+   tags:['neonatus','neonatologi','BBLR','hiperbili','resusitasi','prematur'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/perinatologi'},
+
+  {id:'idai-tumbang', title:'Panduan IDAI: Tumbuh Kembang Anak', org:'IDAI', year:'2022', cat:'IDAI',
+   desc:'Pemantauan tumbuh kembang: milestone 4 domain, Denver II, KPSP, M-CHAT, deteksi dini ASD dan ADHD.',
+   tags:['tumbuh kembang','milestone','Denver','KPSP','M-CHAT','ASD','ADHD'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/tumbuh-kembang'},
+
+  {id:'idai-diare', title:'Panduan IDAI: Diare Akut pada Anak', org:'IDAI', year:'2021', cat:'IDAI',
+   desc:'Panduan diare akut: dehidrasi, rehidrasi oral, zinc, probiotik, antibiotik disentri, penilaian WHO.',
+   tags:['diare','dehidrasi','oralit','zinc','GRO','rehidrasi'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/mengatasi-diare-pada-anak'},
+
+  {id:'idai-alergi', title:'Panduan IDAI: Alergi Susu Sapi pada Anak (CMPA)', org:'IDAI', year:'2021', cat:'IDAI',
+   desc:'Panduan CMPA: manifestasi klinis, diagnosis berbasis klinis, diet eliminasi, formula hidrolisat/amino acid.',
+   tags:['alergi','susu sapi','CMPA','formula','eliminasi','atopi','dermatitis'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/susu-sapi-dan-alergi-susu-sapi-pada-anak'},
+
+  {id:'idai-gizi-buruk', title:'Panduan IDAI: Gizi Buruk pada Anak', org:'IDAI', year:'2022', cat:'IDAI',
+   desc:'Panduan SAM IDAI: 10 langkah tatalaksana, F75 fase stabilisasi, F100 fase rehabilitasi, RUTF.',
+   tags:['SAM','gizi buruk','malnutrisi','F75','stunting','kwashiorkor'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/gizi-anak/malnutrisi-berat-pada-anak'},
+
+  {id:'idai-dm-tipe1', title:'Konsensus IDAI: Diabetes Melitus Tipe 1 pada Anak', org:'IDAI', year:'2022', cat:'IDAI',
+   desc:'Konsensus DM tipe 1 anak: diagnosis, inisiasi insulin, target HbA1c, tatalaksana DKA, pemantauan jangka panjang.',
+   tags:['DM tipe 1','insulin','DKA','HbA1c','hipoglikemia','endokrin'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/diabetes-pada-anak'},
+
+  {id:'idai-adb', title:'Rekomendasi IDAI: Anemia Defisiensi Besi', org:'IDAI', year:'2021', cat:'IDAI',
+   desc:'Panduan ADB pada anak: diagnosis, suplementasi besi, target Hb, durasi terapi, pencegahan.',
+   tags:['ADB','anemia','besi','hemoglobin','ferritin','suplementasi'], embed:false,
+   url:'https://www.idai.or.id/artikel/seputar-kesehatan-anak/anemia-pada-anak'},
+
+  {id:'idai-nefrotik', title:'Rekomendasi IDAI: Sindrom Nefrotik pada Anak', org:'IDAI', year:'2020', cat:'IDAI',
+   desc:'Panduan tatalaksana sindrom nefrotik anak: steroid, relaps, dependen steroid, siklofosfamid, MMF.',
+   tags:['nefrotik','proteinuria','edema','steroid','relaps','nefrologi'], embed:false,
+   url:'https://www.idai.or.id/artikel/klinisi/nefrologi/sindrom-nefrotik'},
+
+// ══════════════════════════════════════════════════════════
+// WHO — World Health Organization (via IRIS — open access)
+// ══════════════════════════════════════════════════════════
+  {id:'who-pocket', title:'WHO Pocket Book: Hospital Care for Children (3rd Ed)', org:'WHO', year:'2023', cat:'WHO',
+   desc:'Panduan WHO tatalaksana anak sakit berat di RS: semua kondisi kritis, dosis obat, prosedur, triase.',
+   tags:['WHO','pediatri','rawat inap','kegawatan','tatalaksana','triase'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/371495/9789240076273-eng.pdf'},
+
+  {id:'who-imci', title:'WHO IMCI Chart Booklet (Updated)', org:'WHO', year:'2014', cat:'WHO',
+   desc:'Integrated Management of Childhood Illness: penilaian sistematis balita sakit 2 bulan–5 tahun.',
+   tags:['IMCI','MTBS','anak sakit','demam','batuk','malnutrisi','anemia'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/104772/9789241506823_Chartbook_eng.pdf'},
+
+  {id:'who-growth', title:'WHO Child Growth Standards (Usia 0–5 Tahun)', org:'WHO', year:'2006', cat:'WHO',
+   desc:'Standar pertumbuhan WHO 0-5 tahun: kurva BB/U, TB/U, BB/TB, LiLA, panduan interpretasi Z-score.',
+   tags:['pertumbuhan','kurva','Z-score','BB','TB','antropometri','stunting'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/43413/924154693X_eng.pdf'},
+
+  {id:'who-diarrhea', title:'WHO: The Treatment of Diarrhoea (4th Edition)', org:'WHO', year:'2005', cat:'WHO',
+   desc:'Panduan WHO tatalaksana diare: ORS formula baru rendah osmolalitas, zinc, menyusui, antibiotik disentri.',
+   tags:['diare','ORS','zinc','rehidrasi','disentri','kolera'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/43209/9241593180.pdf'},
+
+  {id:'who-malaria', title:'WHO: Management of Severe Malaria (3rd Edition)', org:'WHO', year:'2012', cat:'WHO',
+   desc:'Panduan malaria berat WHO: artesunate IV, manajemen hipoglikemia, transfusi, cerebral malaria pada anak.',
+   tags:['malaria','plasmodium','artemisinin','artesunate','cerebral malaria','anak'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/79317/9789241548526_eng.pdf'},
+
+  {id:'who-breastfeeding', title:'WHO: Infant and Young Child Feeding (IYCF)', org:'WHO', year:'2009', cat:'WHO',
+   desc:'Panduan WHO menyusui dan MPASI: ASI eksklusif 6 bulan, pengenalan MPASI, dukungan laktasi.',
+   tags:['ASI','menyusui','MPASI','laktasi','gizi','bayi'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/44117/9789241597494_eng.pdf'},
+
+  {id:'who-anemia', title:'WHO: Guidelines on Use of Ferritin for Iron Deficiency', org:'WHO', year:'2020', cat:'WHO',
+   desc:'Panduan WHO penggunaan ferritin dan diagnosis anemia defisiensi besi: cut-off, interpretasi, suplementasi.',
+   tags:['anemia','besi','ferritin','hemoglobin','WHO','defisiensi'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/331505/9789240000124-eng.pdf'},
+
+  {id:'who-essential-medicines', title:'WHO Essential Medicines for Children (7th List)', org:'WHO', year:'2021', cat:'WHO',
+   desc:'Daftar obat esensial WHO untuk anak: dosis, sediaan, indikasi, ketersediaan, dan prioritas penggunaan.',
+   tags:['obat esensial','WHO','dosis','anak','farmakologi'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/345534/WHO-MHP-HPS-EML-2021.02-eng.pdf'},
+
+  {id:'who-awre', title:'WHO AWaRe Antibiotic Book', org:'WHO', year:'2022', cat:'WHO',
+   desc:'Panduan WHO AWaRe: klasifikasi Access/Watch/Reserve antibiotik, terapi per kondisi klinis, dosis anak.',
+   tags:['antibiotik','AWaRe','stewardship','resistensi','WHO','dosis'], embed:true,
+   url:'https://iris.who.int/bitstream/handle/10665/351253/9789240047709-eng.pdf'},
+
+  {id:'who-rational-use', title:'WHO: Antibiotic Resistance — Key Facts', org:'WHO', year:'2021', cat:'WHO',
+   desc:'Fakta kunci resistensi antibiotik WHO dan panduan penggunaan rasional antibiotik pada anak dan dewasa.',
+   tags:['antibiotik','resistensi','stewardship','AWaRe','rasional'], embed:false,
+   url:'https://www.who.int/news-room/fact-sheets/detail/antibiotic-resistance'},
+
+// ══════════════════════════════════════════════════════════
+// AAP / AHA — American Academy of Pediatrics
+// ══════════════════════════════════════════════════════════
+  {id:'aap-pals', title:'PALS: Pediatric Advanced Life Support (AHA)', org:'AAP/AHA', year:'2020', cat:'AAP/AHA',
+   desc:'PALS 2020: RJP anak, syok, aritmia, respiratory failure, post-resuscitation care, algoritma lengkap.',
+   tags:['PALS','RJP','syok','aritmia','resusitasi','emergensi'], embed:false,
+   url:'https://cpr.heart.org/en/courses/pediatric-advanced-life-support'},
+
+  {id:'aap-nrp', title:'NRP 8th Edition — Neonatal Resuscitation Program (AAP)', org:'AAP/AHA', year:'2021', cat:'AAP/AHA',
+   desc:'NRP 8th Ed: algoritma resusitasi neonatus terbaru, PPV, kompresi dada, epinefrin, surfaktan.',
+   tags:['NRP','resusitasi neonatus','PPV','intubasi','epinefrin','surfaktan'], embed:false,
+   url:'https://www.aap.org/en/patient-care/neonatal-resuscitation-program/'},
+
+  {id:'aap-hyperbili', title:'AAP CPG: Hyperbilirubinemia Neonatal (2022 Update)', org:'AAP', year:'2022', cat:'AAP/AHA',
+   desc:'Pedoman AAP 2022 hiperbilirubinemia neonatus ≥35 minggu: threshold fototerapi baru yang lebih rendah.',
+   tags:['hiperbili','bilirubin','fototerapi','transfusi tukar','neonatus','jaundice'], embed:false,
+   url:'https://publications.aap.org/pediatrics/article/150/3/e2022058859/188726'},
+
+  {id:'aap-adhd', title:'AAP CPG: ADHD Diagnosis & Management (2019)', org:'AAP', year:'2019', cat:'AAP/AHA',
+   desc:'Panduan AAP ADHD anak: kriteria DSM-5, methylphenidate, terapi perilaku, monitoring pertumbuhan.',
+   tags:['ADHD','methylphenidate','behavioral therapy','Vanderbilt','anak'], embed:false,
+   url:'https://publications.aap.org/pediatrics/article/144/4/e20192528/81590'},
+
+  {id:'aap-kawasaki', title:'AHA Scientific Statement: Kawasaki Disease (2017)', org:'AAP/AHA', year:'2017', cat:'AAP/AHA',
+   desc:'Panduan Kawasaki AHA 2017: kriteria klasik & inkomplit, IVIG, aspirin, ekokardiografi, aneurisma koroner.',
+   tags:['Kawasaki','IVIG','aspirin','aneurisma','ekokardiografi','inflamasi'], embed:false,
+   url:'https://www.ahajournals.org/doi/10.1161/CIR.0000000000000484'},
+
+  {id:'aap-uti', title:'AAP CPG: Urinary Tract Infection (2016)', org:'AAP', year:'2016', cat:'AAP/AHA',
+   desc:'Panduan ISK anak 2-24 bulan: diagnosis, kriteria rawat, antibiotik empiris, imaging follow-up.',
+   tags:['ISK','UTI','pielonefritis','antibiotik','VUR'], embed:false,
+   url:'https://www.aap.org/en/patient-care/urinary-tract-infections/'},
+
+// ══════════════════════════════════════════════════════════
+// Panduan Spesialistik Internasional
+// ══════════════════════════════════════════════════════════
+  {id:'ispad-2022', title:'ISPAD Clinical Practice Consensus Guidelines 2022', org:'ISPAD', year:'2022', cat:'Endokrinologi',
+   desc:'Konsensus ISPAD 2022: DM tipe 1, tipe 2, DKA, insulin pump (CSII), CGM, komplikasi, nutrisi anak DM.',
+   tags:['DM','insulin','DKA','ISPAD','hipoglikemia','HbA1c','CGM'], embed:false,
+   url:'https://onlinelibrary.wiley.com/toc/13995448/2022/23/S1'},
+
+  {id:'ilae-2017', title:'ILAE: Revised Classification of Seizures (2017)', org:'ILAE', year:'2017', cat:'Neurologi',
+   desc:'Klasifikasi ILAE 2017 tipe kejang: terminologi baru fokal/umum/tidak diketahui, implikasi terapi.',
+   tags:['kejang','epilepsi','klasifikasi','ILAE','fokal','umum'], embed:false,
+   url:'https://onlinelibrary.wiley.com/doi/10.1111/epi.13670'},
+
+  {id:'ilae-se', title:'ILAE: Treatment of Status Epilepticus in Children (2015)', org:'ILAE', year:'2015', cat:'Neurologi',
+   desc:'Definisi dan tatalaksana ILAE SE anak: lini 1 benzodiazepin, lini 2 AED IV, RSE, anestesi umum.',
+   tags:['status epileptikus','SE','benzodiazepin','fenitoin','midazolam','levetiracetam'], embed:false,
+   url:'https://onlinelibrary.wiley.com/doi/10.1111/epi.12928'},
+
+  {id:'bnfc-online', title:'BNFc — British National Formulary for Children (Online)', org:'BNF/NICE', year:'2024', cat:'Farmakologi',
+   desc:'Referensi dosis pediatri terlengkap: dosis per kgBB, usia neonatus prematur, interaksi, kontraindikasi.',
+   tags:['dosis','obat','BNFc','farmakologi','neonatus','interaksi'], embed:false,
+   url:'https://bnfc.nice.org.uk/about/'},
+
+  {id:'eular-jia', title:'EULAR/PReS Recommendations: JIA Management (2021)', org:'EULAR/PReS', year:'2021', cat:'Reumatologi',
+   desc:'Rekomendasi EULAR/PReS tatalaksana JIA: NSAID, MTX, biologis, uveitis, monitoring toksisitas.',
+   tags:['JIA','artritis','MTX','biologis','uveitis','reumatologi'], embed:false,
+   url:'https://ard.bmj.com/content/81/11/1563.full'},
+
+  {id:'ssc-2020', title:'Surviving Sepsis Campaign: Pediatric Guidelines (2020)', org:'SSC/SCCM', year:'2020', cat:'Emergensi/ICU',
+   desc:'Panduan SSC sepsis pediatrik: definisi, bundle 1 jam, cairan resusitasi, vasopresor, antibiotik empiris.',
+   tags:['sepsis','syok','SSC','bundle','antibiotik','cairan','vasopresor'], embed:false,
+   url:'https://www.sccm.org/Research/Guidelines/Guidelines/Surviving-Sepsis-Campaign-International-Guidelines'},
+
+  {id:'feast-trial', title:'FEAST Trial: Fluid Bolus in African Children with Sepsis (NEJM)', org:'NEJM', year:'2011', cat:'Emergensi/ICU',
+   desc:'Landmark RCT FEAST: bolus cairan agresif meningkatkan mortalitas pada anak Afrika dengan demam dan gangguan perfusi.',
+   tags:['FEAST','cairan','sepsis','bolus','mortalitas','evidence','RCT'], embed:false,
+   url:'https://www.nejm.org/doi/full/10.1056/NEJMoa1101549'},
+
+  {id:'stable-program', title:'S.T.A.B.L.E. Program 6th Edition — Neonatal Stabilization', org:'STABLE Program', year:'2022', cat:'Neonatologi',
+   desc:'Pre/Post-Resuscitation Care: Sugar, Temperature, Airway, Blood Pressure, Lab Work, Emotional Support.',
+   tags:['STABLE','neonatus','transport','stabilisasi','gula','suhu','airway'], embed:false,
+   url:'https://www.stableprogram.org/en/modules/'},
+
+  {id:'esc-pjb', title:'ESC Guidelines: Congenital Heart Disease (2020)', org:'ESC', year:'2020', cat:'Kardiologi',
+   desc:'Panduan ESC 2020 PJB dewasa dan anak: VSD, ASD, TOF, TGA, PDA, Ebstein, hipertensi pulmonal.',
+   tags:['PJB','jantung bawaan','VSD','ASD','TOF','kardiologi'], embed:false,
+   url:'https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Congenital-Heart-Disease-Guidelines'},
+
+// ══════════════════════════════════════════════════════════
+// Kemenkes RI — Panduan Nasional
+// ══════════════════════════════════════════════════════════
+  {id:'kemenkes-mtbs', title:'Buku Bagan MTBS 2022 (Manajemen Terpadu Balita Sakit)', org:'Kemenkes RI / WHO', year:'2022', cat:'Kemenkes',
+   desc:'Bagan MTBS revisi 2022: penilaian balita sakit, klasifikasi, tatalaksana, konseling gizi dan imunisasi.',
+   tags:['MTBS','balita','demam','batuk','diare','anemia','gizi','imunisasi'], embed:true,
+   url:'https://ayosehat.kemkes.go.id/pub/files/files71940MTBS%202022%20new.pdf'},
+
+  {id:'kemenkes-imunisasi', title:'Program Imunisasi Nasional — Jadwal 2023', org:'Kemenkes RI', year:'2023', cat:'Kemenkes',
+   desc:'Jadwal imunisasi program nasional 2023: vaksin wajib, cold chain, KIPI, catch-up yang dibiayai pemerintah.',
+   tags:['imunisasi','vaksin','program nasional','Kemenkes','jadwal','gratis'], embed:false,
+   url:'https://sehatnegeriku.kemkes.go.id/baca/umum/20230201/3242470/jadwal-imunisasi-anak-terbaru-2023/'},
+
+  {id:'kemenkes-stunting', title:'Pedoman Intervensi Penurunan Stunting', org:'Kemenkes RI', year:'2022', cat:'Kemenkes',
+   desc:'Pedoman Kemenkes pencegahan dan tatalaksana stunting: intervensi spesifik, sensitif, PMT, pemantauan.',
+   tags:['stunting','gizi','PMT','intervensi','Kemenkes','pertumbuhan'], embed:false,
+   url:'https://yankes.kemkes.go.id/view_artikel/1388/cegah-stunting-itu-penting'},
+
+  {id:'kia-2023', title:'Buku Kesehatan Ibu dan Anak (KIA) Edisi 2023', org:'Kemenkes RI', year:'2023', cat:'Kemenkes',
+   desc:'Buku KIA 2023: imunisasi, tumbuh kembang, gizi anak, perawatan bayi baru lahir, MTBS ringkas.',
+   tags:['KIA','imunisasi','tumbuh kembang','MTBS','gizi','Posyandu','buku pink'], embed:false,
+   url:'https://yankes.kemkes.go.id/unduhan'},
+
+];
+
+
+// ── State ──────────────────────────────────────────────────────
+var docsSearch      = '';
+var docsActiveCat   = 'Semua';
+var docsInitDone    = false;
+
+// ── Get all categories ─────────────────────────────────────────
+function getDocsCats() {
+  var cats = ['Semua'];
+  var seen = {};
+  for (var i = 0; i < DOCS_DB.length; i++) {
+    var cat = DOCS_DB[i].cat;
+    if (!seen[cat]) { cats.push(cat); seen[cat] = true; }
+  }
+  return cats;
+}
+
+// ── Init ────────────────────────────────────────────────────────
+function initDocs() {
+  if (docsInitDone) { renderDocsList(); return; }
+  docsInitDone = true;
+  renderDocsCats();
+  renderDocsList();
+}
+
+// ── Search & filter ────────────────────────────────────────────
+function onDocsSearch(val) {
+  docsSearch = val.toLowerCase().trim();
+  var clr = document.getElementById('docs-search-clear');
+  if (clr) clr.style.display = val ? 'flex' : 'none';
+  renderDocsList();
+}
+
+function clearDocsSearch() {
+  docsSearch = '';
+  var inp = document.getElementById('docs-search');
+  if (inp) inp.value = '';
+  var clr = document.getElementById('docs-search-clear');
+  if (clr) clr.style.display = 'none';
+  renderDocsList();
+}
+
+function setDocsCat(cat) {
+  docsActiveCat = cat;
+  renderDocsCats();
+  renderDocsList();
+}
+
+// ── Category chips ─────────────────────────────────────────────
+function renderDocsCats() {
+  var el = document.getElementById('docs-cats');
+  if (!el) return;
+  var cats = getDocsCats();
+  var catColors = {
+    'PNPK':'#dc2626','IDAI':'#0f7b6c','WHO':'#0369a1',
+    'AAP/AHA':'#7c3aed','Endokrinologi':'#0d9488',
+    'Neurologi':'#7c3aed','Farmakologi':'#d97706',
+    'Kemenkes':'#dc2626','Emergensi/ICU':'#dc2626',
+    'Neonatologi':'#0f7b6c','Semua':'#475569'
+  };
+  var html = '';
+  for (var i = 0; i < cats.length; i++) {
+    var cat    = cats[i];
+    var active = cat === docsActiveCat;
+    var col    = catColors[cat] || '#475569';
+    var style  = active ? 'background:' + col + ';color:#fff;border-color:' + col : '';
+    html += '<button data-dcat="' + cat + '" class="docs-cat-chip'
+      + (active ? ' docs-cat-active' : '') + '" style="' + style + '">'
+      + cat + '</button>';
+  }
+  el.innerHTML = html;
+  var chips = el.querySelectorAll('[data-dcat]');
+  for (var j = 0; j < chips.length; j++) {
+    chips[j].addEventListener('click', (function(v) {
+      return function() { setDocsCat(v); };
+    })(chips[j].getAttribute('data-dcat')));
+  }
+}
+
+// ── Document list ──────────────────────────────────────────────
+function renderDocsList() {
+  var el = document.getElementById('docs-list');
+  if (!el) return;
+
+  var filtered = DOCS_DB.filter(function(d) {
+    var matchCat = docsActiveCat === 'Semua' || d.cat === docsActiveCat;
+    if (!matchCat) return false;
+    if (!docsSearch) return true;
+    var q = docsSearch;
+    if (d.title.toLowerCase().indexOf(q) >= 0) return true;
+    if (d.org.toLowerCase().indexOf(q) >= 0) return true;
+    if (d.desc.toLowerCase().indexOf(q) >= 0) return true;
+    for (var i = 0; i < d.tags.length; i++) {
+      if (d.tags[i].toLowerCase().indexOf(q) >= 0) return true;
+    }
+    return false;
+  });
+
+  if (filtered.length === 0) {
+    el.innerHTML = '<div class="docs-empty"><div class="docs-empty-icon">📄</div>'
+      + '<div class="docs-empty-text">Dokumen tidak ditemukan.<br>Coba kata kunci lain.</div></div>';
+    return;
+  }
+
+  var catColors = {
+    'PNPK':'#dc2626','IDAI':'#0f7b6c','WHO':'#0369a1',
+    'AAP/AHA':'#7c3aed','Endokrinologi':'#0d9488',
+    'Neurologi':'#7c3aed','Farmakologi':'#d97706',
+    'Kemenkes':'#dc2626','Emergensi/ICU':'#b91c1c',
+    'Neonatologi':'#0f7b6c'
+  };
+
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var d   = filtered[i];
+    var col = catColors[d.cat] || '#475569';
+
+    // Tags string
+    var tagsHtml = '';
+    var showTags = d.tags.slice(0, 5);
+    for (var ti = 0; ti < showTags.length; ti++) {
+      tagsHtml += '<span class="docs-tag">' + showTags[ti] + '</span>';
+    }
+
+    html += '<div class="docs-card" onclick="openDocsItem(\'' + d.id + '\')">'
+
+      // Card header
+      + '<div class="docs-card-header">'
+      + '<div class="docs-card-left">'
+      + '<div class="docs-org-badge" style="background:' + col + '1a;color:' + col + ';border-color:' + col + '30">'
+      + d.org + '</div>'
+      + '<div class="docs-year">' + d.year + '</div>'
+      + '</div>'
+      + '<div class="docs-action-icon">' + (d.embed ? '📖' : '↗') + '</div>'
+      + '</div>'
+
+      // Title
+      + '<div class="docs-card-title">' + d.title + '</div>'
+
+      // Description
+      + '<div class="docs-card-desc">' + d.desc + '</div>'
+
+      // Tags
+      + '<div class="docs-tags">' + tagsHtml + '</div>'
+
+      // Action hint
+      + '<div class="docs-action-hint">'
+      + (d.embed
+          ? '<span class="docs-hint-read">📖 Baca langsung dalam aplikasi</span>'
+          : '<span class="docs-hint-open">↗ Buka di browser</span>')
+      + '</div>'
+
+      + '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ── Open document ──────────────────────────────────────────────
+function openDocsItem(id) {
+  var doc = null;
+  for (var i = 0; i < DOCS_DB.length; i++) {
+    if (DOCS_DB[i].id === id) { doc = DOCS_DB[i]; break; }
+  }
+  if (!doc) return;
+
+  // Always store current URL for fallback button
+  window._currentDocUrl = doc.url;
+
+  if (doc.embed) {
+    // ── In-app PDF viewer ─────────────────────────────────
+    var viewer  = document.getElementById('docs-viewer');
+    var titleEl = document.getElementById('docs-viewer-title');
+    var infoEl  = document.getElementById('docs-viewer-info');
+    var frame   = document.getElementById('docs-viewer-frame');
+    var linkEl  = document.getElementById('docs-viewer-link');
+    var loading = document.getElementById('docs-viewer-loading');
+    if (!viewer || !frame) return;
+
+    // Set header content
+    if (titleEl) titleEl.textContent = doc.title;
+    if (infoEl)  infoEl.textContent  = doc.org + ' · ' + doc.year + ' · PDF';
+    if (linkEl)  { linkEl.href = doc.url; }
+
+    // Show viewer + loading
+    viewer.style.display = 'flex';
+    if (loading) loading.style.display = 'flex';
+    frame.style.opacity = '0';
+
+    // Try three embed strategies in order:
+    // 1. Google Docs Viewer (best for PDFs from external hosts)
+    // 2. Direct URL (some browsers support PDF inline)
+    var gdocsUrl = 'https://docs.google.com/viewer?url='
+      + encodeURIComponent(doc.url) + '&embedded=true';
+
+    var loadTimer = null;
+    var tried = 0;
+
+    function tryLoad(url) {
+      frame.onload = function() {
+        // Loaded — hide spinner, show iframe
+        if (loading) loading.style.display = 'none';
+        frame.style.opacity = '1';
+        if (loadTimer) clearTimeout(loadTimer);
+      };
+      frame.src = url;
+      // If not loaded in 12s, keep spinner visible but don't switch
+      loadTimer = setTimeout(function() {
+        // Still show frame anyway — Google viewer sometimes loads slowly
+        if (loading) loading.style.display = 'none';
+        frame.style.opacity = '1';
+      }, 12000);
+    }
+
+    tryLoad(gdocsUrl);
+
+  } else {
+    // ── Open external link in browser ─────────────────────
+    window.open(doc.url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function openDocFallback() {
+  if (window._currentDocUrl) {
+    window.open(window._currentDocUrl, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function closeDocsViewer() {
+  var viewer  = document.getElementById('docs-viewer');
+  var frame   = document.getElementById('docs-viewer-frame');
+  var loading = document.getElementById('docs-viewer-loading');
+  if (viewer)  viewer.style.display = 'none';
+  if (frame)   { frame.src = 'about:blank'; frame.style.opacity = '0'; }
+  if (loading) loading.style.display = 'none';
+  window._currentDocUrl = null;
+}
+
+
+
+
+function closeDocsViewer() {
+  var viewer = document.getElementById('docs-viewer');
+  var frame  = document.getElementById('docs-viewer-frame');
+  if (viewer) viewer.style.display = 'none';
+  if (frame)  frame.src = 'about:blank';
+}
+
 
 function toggleMustKnow(uid) {
   var body = document.getElementById(uid + '-body');
