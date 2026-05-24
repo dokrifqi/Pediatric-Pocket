@@ -1903,6 +1903,108 @@ tr:hover td { background:var(--slate-50); }
   .drug-ind-days { background: rgba(255,255,255,.1); }
 }
 
+
+/* ══════════════════════════════════════════════════════════════
+   FLOWCHART CONNECTORS v2 — Proper vertical + horizontal bridges
+══════════════════════════════════════════════════════════════ */
+
+/* Row of vertical connectors above each node row */
+.fc-connector-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: max-content;
+  padding: 0 4px;
+}
+.fc-conn-col {
+  min-width: 180px;
+  max-width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.fc-conn-vert, .fc-conn-vert2 {
+  width: 0;
+  border-left: 2px solid #94a3b8;
+  height: 14px;
+}
+.fc-conn-badge {
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 20px;
+  padding: 3px 9px;
+  text-align: center;
+  max-width: 180px;
+  line-height: 1.4;
+  margin: 2px 4px;
+  word-break: break-word;
+  text-align: center;
+}
+.fc-conn-arrow-down {
+  font-size: 11px;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+/* Horizontal bridge row — connects siblings */
+.fc-hbridge-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 10px;
+  min-width: max-content;
+  padding: 0 4px;
+  height: 8px;
+}
+.fc-hbridge-cell {
+  min-width: 180px;
+  max-width: 240px;
+  flex-shrink: 0;
+  height: 8px;
+}
+.fc-hb-line {
+  height: 100%;
+  border-top: 2px solid #94a3b8;
+}
+.fc-hb-single .fc-hb-line { visibility: hidden; }
+.fc-hb-first  .fc-hb-line { margin-left: 50%; }
+.fc-hb-last   .fc-hb-line { margin-right: 50%; }
+.fc-hb-middle .fc-hb-line { /* full width bridge */ }
+
+/* Download button */
+.fc-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 6px 10px 10px;
+  box-shadow: 0 2px 8px rgba(15,123,108,.3);
+  transition: transform .15s, box-shadow .15s;
+}
+.fc-download-btn:active {
+  transform: scale(.97);
+  box-shadow: 0 1px 4px rgba(15,123,108,.2);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .fc-conn-vert, .fc-conn-vert2 { border-color: #30363d; }
+  .fc-conn-arrow-down { color: #5eead4; }
+  .fc-hb-line { border-color: #30363d; }
+}
+
 </style>
 </head>
 <body>
@@ -2201,7 +2303,7 @@ const PROTOCOLS = [
       "Tim minimal 2 orang: 1 airway, 1 kompresi",
     ]},
     {kind:"algo", id:"resus", title:"Algoritma Resusitasi", entry:"lahir", formulas:{
-      "et-size":{label:"Ukuran Pipa ET", expr:"BB < 1 kg = 2.5 mm, 1–2 kg = 3.0, > 2 kg = 3.5", fn:w=>w<1?2.5:w<2?3.0:3.5, unit:"mm ID", prec:1, note:"Konfirmasi: colorimetric CO₂ + dada naik simetris."},
+      "et-size":{label:"Ukuran Pipa ET", expr:"GA < 28mgg → 2.5 | GA 28–36mgg → 3.0 | GA 37–40mgg → 3.5 | GA > 40mgg → 4.0", fn:(w,e)=>{var ga=e.ga||38;return ga<28?2.5:ga<37?3.0:ga<=40?3.5:4.0;}, unit:"mm ID", prec:1, extras:[{key:"ga",label:"Usia Gestasi (minggu)",def:38,min:23,max:44,unit:"mgg"}], note:"NRP 8th Ed 2021. Kedalaman dari bibir (cm) = BB(kg)+6 atau GA/10+6. GA<28mgg→2.5mm | GA28-36mgg→3.0mm | GA37-40mgg→3.5mm | GA>40mgg→4.0mm. Konfirmasi: colorimetric CO₂ + foto thoraks. Cuffed ETT boleh semua usia (AAP 2021)."},
       "et-depth":{label:"Kedalaman ET dari bibir", expr:"BB (kg) + 6 cm", fn:w=>w+6, unit:"cm", prec:1, note:"Aturan '1+6'. Konfirmasi foto thoraks."},
       "epi-iv":{label:"Epinefrin IV (1:10.000)", expr:"0.2 mL × BB (kg)", fn:w=>0.2*w, unit:"mL", prec:2, note:"Via vena umbilikal. Ulang tiap 3–5 menit."},
       "epi-et":{label:"Epinefrin Endotrakeal", expr:"0.5 mL × BB (kg) — hanya bila tidak ada akses IV", fn:w=>0.5*w, unit:"mL", prec:2, note:"Absorpsi ET tidak andal. Segera cari akses IV."},
@@ -2449,7 +2551,7 @@ const PROTOCOLS = [
     {kind:"algo",id:"sep",title:"Alur Tatalaksana Sepsis",entry:"start",formulas:{
       "amp":{label:"Ampisilin (sepsis)",expr:"50 mg × BB (kg) per dosis",fn:w=>50*w,unit:"mg/dosis",prec:0,note:"IV 15–30 menit. Interval: < 7 hari → tiap 12 jam; ≥ 7 hari → tiap 8 jam."},
       "amp-men":{label:"Ampisilin (meningitis — dosis tinggi)",expr:"100 mg × BB (kg) per dosis",fn:w=>100*w,unit:"mg/dosis",prec:0,note:"Dosis 2× lipat. IV drip 30 menit. Tiap 8 jam."},
-      "genta":{label:"Gentamisin (extended interval)",expr:"Dosis/kg × BB (kg)",fn:(w,e)=>(e.dosis||4)*w,unit:"mg/dosis",prec:1,extras:[{key:"dosis",label:"Dosis/kg sesuai GA",def:4,min:3,max:5,unit:"mg/kg"}],note:"< 30 mgg: 3.5 mg/kg tiap 48 jam. 30–35 mgg: 4 mg/kg tiap 36 jam. ≥ 35 mgg: 4–5 mg/kg tiap 24 jam. Monitor TDM."},
+      "genta":{label:"Gentamisin (extended interval)",expr:"Dosis/kg × BB (kg)",fn:(w,e)=>(e.dosis||4)*w,unit:"mg/dosis",prec:1,extras:[{key:"dosis",label:"Dosis/kg sesuai GA",def:4,min:3,max:5,unit:"mg/kg"}],note:"BNFc 2023 interval berdasarkan GA: < 29 mgg → 3.5 mg/kg tiap 36 jam. 29–35 mgg → 4 mg/kg tiap 24 jam. ≥ 36 mgg → 4.5 mg/kg tiap 18-24 jam. Monitor TDM: trough < 1 mcg/mL, puncak 5-10 mcg/mL."},
       "vanko":{label:"Vankomisin",expr:"15 mg × BB (kg) per dosis",fn:w=>15*w,unit:"mg/dosis",prec:0,note:"Infus 60 menit. Interval: < 29 mgg tiap 24 jam, 29–36 mgg tiap 18 jam, > 36 mgg tiap 12 jam. Target trough 10–20 mcg/mL."},
       "cefot":{label:"Sefotaksim",expr:"50–100 mg × BB (kg) per dosis",fn:(w,e)=>(e.dosis||50)*w,unit:"mg/dosis",prec:0,extras:[{key:"dosis",label:"Dosis/kg",def:50,min:50,max:100}],note:"JANGAN gunakan seftriakson pada neonatus — risiko kern-ikterus."},
     },
@@ -2704,10 +2806,10 @@ const PROTOCOLS = [
   blocks:[
     {kind:"algo",id:"irama",title:"Alur Gangguan Irama",entry:"start",formulas:{
       "aden1":{label:"Adenosin dosis 1",expr:"0.1 mg × BB (kg) — maks 6 mg",fn:w=>Math.min(0.1*w,6),unit:"mg",prec:1,note:"Berikan IV cepat (bolus < 1 detik) + flush NS 5–10 mL segera. Rekam EKG kontinu."},
-      "aden2":{label:"Adenosin dosis 2",expr:"0.2 mg × BB (kg) — maks 12 mg",fn:w=>Math.min(0.2*w,12),unit:"mg",prec:1,note:"Bila dosis 1 tidak efektif setelah 1–2 menit. Maks 12 mg."},
+      "aden2":{label:"Adenosin dosis 2",expr:"0.2 mg × BB (kg) — maks 12 mg",fn:w=>Math.min(0.2*w,12),unit:"mg",prec:1,note:"Bila dosis 1 tidak efektif setelah 1–2 menit. Maks 12 mg. Teknik sama: bolus < 1 detik + flush NS segera."},"aden3":{label:"Adenosin dosis 3 (AAP 2021)",expr:"0.3 mg × BB (kg) — maks 18 mg",fn:w=>Math.min(0.3*w,18),unit:"mg",prec:1,note:"Bila dosis 2 tidak efektif setelah 1-2 menit. Maks 18 mg. Teknik sama: bolus cepat + flush NS. Bila masih tidak respons → kardioversi tersinkronisasi atau konsul kardiologi anak."},
       "amio-tv":{label:"Amiodaron (takikardia stabil)",expr:"5 mg × BB (kg)",fn:w=>Math.min(5*w,300),unit:"mg",prec:0,note:"Infus dalam 20–60 menit. Maks 300 mg. Pantau TD — dapat menyebabkan hipotensi."},
       "lido":{label:"Lidokain",expr:"1 mg × BB (kg)",fn:w=>Math.min(1*w,100),unit:"mg",prec:0,note:"Alternatif amiodaron untuk VT dengan nadi. IV pelan. Maks 100 mg."},
-      "atrop":{label:"Atropin",expr:"0.02 mg × BB (kg)",fn:w=>Math.min(Math.max(0.02*w,0.1),0.5),unit:"mg",prec:2,note:"Dosis min 0.1 mg, maks 0.5 mg (anak) / 1 mg (remaja). Untuk bradikardia simtomatik."},
+      "atrop":{label:"Atropin",expr:"0.02 mg × BB (kg)",fn:w=>Math.min(Math.max(0.02*w,0.1), w>=40?1.0:0.5),unit:"mg",prec:2,note:"Dosis min 0.1 mg, maks 0.5 mg (anak) / 1 mg (remaja). Untuk bradikardia simtomatik."},
       "sync-j":{label:"Kardioversi sinkronisasi",expr:"1 J × BB (kg) — dosis pertama",fn:w=>Math.min(1*w,50),unit:"J",prec:0,note:"Bila tidak respons: naikkan ke 2 J/kgBB. Maksimal 200 J."},
       "pace":{label:"Pacu jantung transkutan",expr:"Miliamps: mulai 40 mA, titrasi",fn:()=>40,unit:"mA",prec:0,note:"Frekuensi 60–80/menit. Lakukan hanya bila tidak respons atropin. Sambil persiapan transvenous pacing."},
     },
@@ -2785,9 +2887,9 @@ const PROTOCOLS = [
     ]},
     {kind:"algo",id:"intub",title:"Algoritma RSI",entry:"start",formulas:{
       "et-anak":{label:"Ukuran ET uncuffed (anak ≥ 1 tahun)",expr:"(Usia/4) + 4",fn:(w,e)=>(e.usia/4)+4,unit:"mm ID",prec:1,extras:[{key:"usia",label:"Usia (tahun)",def:4,min:1,max:16}],note:"Cuffed: (usia/4) + 3.5. Selalu siapkan ukuran ±0.5."},
-      "et-dalam":{label:"Kedalaman ET dari bibir",expr:"(Usia/2) + 12 cm",fn:(w,e)=>(e.usia/2)+12,unit:"cm",prec:1,extras:[{key:"usia",label:"Usia (tahun)",def:4,min:1,max:16}],note:"Konfirmasi: gerakan dada bilateral, auskultasi, kapnografi, foto thoraks."},
+      "et-dalam":{label:"Kedalaman ET dari bibir",expr:"(Usia/2) + 12 cm",fn:(w,e)=>{var ga=e.ga||0;return ga>0?(ga/10)+6:(e.usia/2)+12;},unit:"cm",prec:1,extras:[{key:"usia",label:"Usia (tahun)",def:4,min:1,max:16}],note:"Konfirmasi: gerakan dada bilateral, auskultasi, kapnografi, foto thoraks."},
       "midaz-rsi":{label:"Midazolam (premedikasi/induksi)",expr:"0.1–0.3 mg × BB (kg)",fn:w=>0.1*w,unit:"mg",prec:1,note:"Dosis 0.1–0.3 mg/kgBB IV. Maks 10 mg. Onset 1–3 menit."},
-      "ketamin-rsi":{label:"Ketamin (induksi)",expr:"1–2 mg × BB (kg)",fn:(w,e)=>(e.dosis||1.5)*w,unit:"mg",prec:0,extras:[{key:"dosis",label:"Dosis (mg/kg)",def:1.5,min:1,max:2}],note:"Pilihan utama RSI pediatrik. Bronkodilator, menjaga refleks jalan nafas. Hindari bila hipertensi intrakranial."},
+      "ketamin-rsi":{label:"Ketamin (induksi)",expr:"1–2 mg × BB (kg)",fn:(w,e)=>(e.dosis||1.5)*w,unit:"mg",prec:0,extras:[{key:"dosis",label:"Dosis (mg/kg)",def:1.5,min:1,max:2}],note:"PILIHAN UTAMA RSI pada syok (kardioprotektif — mempertahankan tonus simpatis dan cardiac output). Bronkodilator ideal untuk asma+distres napas. Kontraindikasi RELATIF: TIK sangat tinggi (cedera kepala berat, herniasi otak), hipertensi berat. Syok bukan kontraindikasi — justru indikasi kuat. Dosis 1mg/kg (bukan 1.5-2mg/kg) bila hemodinamik sangat tidak stabil."},
       "prop-rsi":{label:"Propofol (induksi)",expr:"2 mg × BB (kg)",fn:w=>2*w,unit:"mg",prec:0,note:"Maks 200 mg. Dapat menyebabkan hipotensi. Tidak dianjurkan pada syok atau anak < 3 tahun untuk RSI emergensi."},
       "suksinil":{label:"Suksinilkolin (relaksan)",expr:"2 mg × BB (kg)",fn:w=>Math.min(2*w,150),unit:"mg",prec:0,note:"Maks 150 mg. Kontraindikasi: hiperkalemia, miopati, luka bakar luas, denervasi. Onset 45–60 detik, durasi 5–10 menit."},
       "rokuro":{label:"Rokuronim (relaksan non-depol)",expr:"1.2 mg × BB (kg)",fn:w=>1.2*w,unit:"mg",prec:0,note:"Dosis RSI: 1.2 mg/kgBB. Onset 60–90 detik. Dapat di-reverse dengan sugammadex 16 mg/kgBB."},
@@ -5052,7 +5154,7 @@ const PROTOCOLS = [
       ["Murmur asimtomatik bayi sehat","Bising fungsional / PS ringan / VSD kecil","Echo konfirmasi bila bising bermakna"],
     ]},
     {kind:"algo",id:"pjb-alur",title:"Alur Pendekatan PJB",entry:"tampilan",formulas:{
-      "pge1-pjb":{label:"PGE1 (Alprostadil) — dosis awal",expr:"0.05–0.1 mcg/kg/min → Rate (mL/jam) = dosis × BB × 60 ÷ konsentrasi",fn:(w,e)=>{const d=e.dose||0.05,con=e.conc||10;return(d*w*60)/con;},unit:"mL/jam",prec:2,extras:[{key:"dose",label:"Dosis (mcg/kg/min)",def:0.05,min:0.01,max:0.1},{key:"conc",label:"Konsentrasi (mcg/mL)",def:10,min:5,max:20}],note:"Konsentrasi 10 mcg/mL: campurkan PGE1 1 mL (500 mcg) + NS 49 mL = 10 mcg/mL. SIAPKAN bag-mask — apnea 10–12% dalam 1 jam pertama."},
+      "pge1-pjb":{label:"PGE1 (Alprostadil) — dosis awal",expr:"0.05–0.1 mcg/kg/min → Rate (mL/jam) = dosis × BB × 60 ÷ konsentrasi",fn:(w,e)=>{const d=e.dose||0.05,con=e.conc||10;return(d*w*60)/con;},unit:"mL/jam",prec:2,extras:[{key:"dose",label:"Dosis (mcg/kg/min)",def:0.05,min:0.01,max:0.1},{key:"conc",label:"Konsentrasi (mcg/mL)",def:10,min:5,max:20}],note:"🔴 SIAPKAN INTUBASI SEBELUM MULAI PGE1 — apnea terjadi 30-40% kasus (bukan 10%), terutama < 30 menit pertama dan BB < 2 kg. Monitor SpO₂ + napas kontinyu. Konsentrasi 10 mcg/mL: PGE1 1mL (500mcg) + NS 49mL. Dosis maintenance: turunkan ke 0.01-0.025 mcg/kg/mnt setelah ductus terbuka. Target SpO₂ 75-85% (ductus-dependent)."},
     },
     nodes:{
       tampilan:{title:"Bagaimana tampilan klinis bayi?",branches:[
@@ -8955,6 +9057,12 @@ function showComingSoon() {
   setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 1800);
 }
 
+
+function focusSearch() {
+  var inp = document.getElementById('search-input');
+  if (inp) inp.focus();
+}
+
 function onSearch(val) {
   var q = val.trim().toLowerCase();
   var resultsEl = document.getElementById('search-results');
@@ -9161,7 +9269,18 @@ function renderBlock(block) {
   if (k === 'section')    return renderSection(block);
   if (k === 'criteria')   return renderCriteria(block);
   if (k === 'formula')    return renderFormulaBlock(block);
-  if (k === 'algo')       return renderAlgo(block);
+  if (k === 'algo') {
+    var aHtml = renderAlgo(block);
+    var aTitle = (currentProtocol ? currentProtocol.title + ' — ' : '') + (block.title || 'Alur Tatalaksana');
+    var aDl = '<button class="fc-download-btn" data-dltitle="' + aTitle.replace(/"/g,'').replace(/</g,'').replace(/>/g,'') + '"'
+      + ' onclick="handleFlowchartDownload(this)">' 
+      + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+      + '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>'
+      + '<polyline points="7 10 12 15 17 10"/>'
+      + '<line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      + ' Download Alur PNG</button>';
+    return aHtml + aDl;
+  }
   if (k === 'callout')    return renderCallout(block);
   if (k === 'table')      return renderTable(block);
   if (k === 'ballard')    return renderBallard(block);
@@ -12738,80 +12857,110 @@ function renderAlgoFlowchart(block, containerId) {
   var positions = layout.positions;
   var rowKeys  = layout.rowKeys;
 
-  // ── Render row by row (top→bottom) ──────────────────────
+  // Build: parentOf[childId] = parentId (for connector line logic)
+  var parentOf = {};
+  var childrenOf = {};
+  for (var ei = 0; ei < edges.length; ei++) {
+    var e = edges[ei];
+    if (!parentOf[e.to]) parentOf[e.to] = e.from;
+    if (!childrenOf[e.from]) childrenOf[e.from] = [];
+    childrenOf[e.from].push(e.to);
+  }
+
+  // Build: edgeLabel[fromId][toId] = {label, tone}
+  var edgeMap = {};
+  for (var ei = 0; ei < edges.length; ei++) {
+    var e = edges[ei];
+    if (!edgeMap[e.from]) edgeMap[e.from] = {};
+    edgeMap[e.from][e.to] = { label: e.label, tone: e.tone };
+  }
+
   var html = '<div class="fc-wrap">';
 
   for (var ri = 0; ri < rowKeys.length; ri++) {
     var rowKey  = rowKeys[ri];
-    var rowNums = parseInt(rowKey);
     var rowIds  = layout.rows[rowKey];
     if (!rowIds || rowIds.length === 0) continue;
 
-    // Row container
-    html += '<div class="fc-row">';
+    // ── CONNECTOR ROW: lines from parent → children ──────────
+    if (ri > 0) {
+      html += '<div class="fc-connector-row">';
+      for (var ci = 0; ci < rowIds.length; ci++) {
+        var childId  = rowIds[ci];
+        var parentId = parentOf[childId];
+        var edgeInfo = parentId && edgeMap[parentId] ? edgeMap[parentId][childId] : null;
+        var ec       = edgeInfo ? toneColor(edgeInfo.tone) : '#94a3b8';
+        var label    = edgeInfo ? edgeInfo.label : '';
 
+        html += '<div class="fc-conn-col">';
+        html += '<div class="fc-conn-vert" style="border-color:' + ec + '"></div>';
+        if (label) {
+          html += '<div class="fc-conn-badge" style="color:' + ec
+            + ';background:' + toneBg(edgeInfo.tone) + ';border-color:' + ec + '">'
+            + label + '</div>';
+          html += '<div class="fc-conn-vert2" style="border-color:' + ec + '"></div>';
+        }
+        html += '<div class="fc-conn-arrow-down" style="color:' + ec + '">▼</div>';
+        html += '</div>';
+      }
+      html += '</div>'; // end fc-connector-row
+
+      // ── Horizontal bridge line when siblings share a parent ──
+      var parentIds = {};
+      for (var ci = 0; ci < rowIds.length; ci++) {
+        var pid = parentOf[rowIds[ci]];
+        if (pid) { if (!parentIds[pid]) parentIds[pid] = []; parentIds[pid].push(ci); }
+      }
+      var hasSiblings = false;
+      var pkeys = Object.keys(parentIds);
+      for (var pk = 0; pk < pkeys.length; pk++) {
+        if (parentIds[pkeys[pk]].length > 1) { hasSiblings = true; break; }
+      }
+      if (hasSiblings) {
+        html += '<div class="fc-hbridge-row">';
+        for (var ci = 0; ci < rowIds.length; ci++) {
+          var childId = rowIds[ci];
+          var pid     = parentOf[childId];
+          var siblings = pid ? (parentIds[pid] || []) : [];
+          var isFirst  = siblings.length > 0 && siblings[0] === ci;
+          var isLast   = siblings.length > 0 && siblings[siblings.length-1] === ci;
+          var isMiddle = siblings.length > 1 && !isFirst && !isLast;
+          var isSingle = siblings.length <= 1;
+          var ec = '#94a3b8';
+          if (edgeMap[pid] && edgeMap[pid][childId]) {
+            ec = toneColor(edgeMap[pid][childId].tone);
+          }
+          html += '<div class="fc-hbridge-cell'
+            + (isSingle ? ' fc-hb-single' : '')
+            + (isFirst  ? ' fc-hb-first'  : '')
+            + (isLast   ? ' fc-hb-last'   : '')
+            + (isMiddle ? ' fc-hb-middle' : '') + '">'
+            + '<div class="fc-hb-line" style="'
+            + (isSingle ? 'visibility:hidden' :
+               isFirst  ? 'margin-left:50%;border-color:' + ec :
+               isLast   ? 'margin-right:50%;border-color:' + ec :
+                          'border-color:' + ec) + '"></div>'
+            + '</div>';
+        }
+        html += '</div>'; // end fc-hbridge-row
+      }
+    }
+
+    // ── NODE ROW ─────────────────────────────────────────────
+    html += '<div class="fc-row">';
     for (var ci = 0; ci < rowIds.length; ci++) {
       var id   = rowIds[ci];
       var node = nodes[id];
       var pos  = positions[id];
       if (!node) continue;
-
-      // Column wrap
-      html += '<div class="fc-col">';
-
-      // ── Incoming edge labels (branches from parent that point to this node) ──
-      var incomingEdges = [];
-      for (var ei = 0; ei < edges.length; ei++) {
-        if (edges[ei].to === id) incomingEdges.push(edges[ei]);
-      }
-
-      if (incomingEdges.length > 0 && pos.row > 0) {
-        // Show edge labels coming into this node
-        for (var ei = 0; ei < incomingEdges.length; ei++) {
-          var e = incomingEdges[ei];
-          var ec = toneColor(e.tone);
-          html += '<div class="fc-edge-in">'
-            + '<div class="fc-edge-line" style="background:' + ec + '"></div>'
-            + '<div class="fc-edge-label" style="color:' + ec + ';border-color:' + ec + ';background:' + toneBg(e.tone) + '">'
-            + e.label + '</div>'
-            + '<div class="fc-edge-arrow" style="color:' + ec + '">▼</div>'
-            + '</div>';
-        }
-      } else if (pos.row > 0) {
-        // Just a connector arrow
-        html += '<div class="fc-connector-simple"><div class="fc-conn-line"></div><div class="fc-conn-arrow">▼</div></div>';
-      }
-
-      // Node box
-      html += renderFlowNode(node, pos, formulas);
-
-      // ── Outgoing edge indicator (horizontal branches) ──
-      var outEdges = edges.filter(function(e){ return e.from === id; });
-      if (outEdges.length > 1) {
-        // Multiple branches → show horizontal split indicator
-        html += '<div class="fc-split-indicator">'
-          + '<div class="fc-split-line"></div>'
-          + '<div class="fc-split-label">' + outEdges.length + ' jalur keputusan ↓</div>'
-          + '<div class="fc-split-line"></div>'
-          + '</div>';
-      }
-
-      html += '</div>'; // end fc-col
+      html += '<div class="fc-col">' + renderFlowNode(node, pos, formulas) + '</div>';
     }
-
     html += '</div>'; // end fc-row
-
-    // Row separator if not last
-    if (ri < rowKeys.length - 1) {
-      html += '<div class="fc-row-sep"></div>';
-    }
   }
 
   html += '</div>'; // end fc-wrap
   return html;
 }
-
-
 
 // ── Main: render Must Know Box with full overview ───────────
 function renderMustKnowBox(innerHtml, algoBlocks) {
@@ -12828,7 +12977,11 @@ function renderMustKnowBox(innerHtml, algoBlocks) {
       overviewSections += '<div class="ov-section-title">'
         + '<span class="ov-section-icon">🗺️</span>' + ab.title + '</div>';
     }
+    var fcTitle = (currentProtocol ? currentProtocol.title : '') + ' — ' + (ab.title || 'Alur');
     overviewSections += renderAlgoFlowchart(ab);
+        overviewSections += '<button class="fc-download-btn" data-dltitle="' + fcTitle.replace(/"/g,'') + '" onclick="handleFlowchartDownload(this)">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+      + ' Download Bagan PNG</button>';
     overviewSections += '</div>';
   }
 
@@ -12855,20 +13008,19 @@ function renderMustKnowBox(innerHtml, algoBlocks) {
     + '</div>'
     + innerHtml
 
-    // Section 2 — Algo Overview (only if available)
+    // Section 2 — Algo Overview
     + (overviewSections
         ? '<div class="mkb-section-label" style="margin-top:6px">'
           + '<div class="mkb-section-pill mkb-pill-teal">🗺️ Gambaran Besar Alur Tatalaksana</div>'
           + '</div>'
           + '<div class="mkb-overview-wrap">'
-          + '<div class="mkb-ov-hint">Baca alur ini dulu sebelum memulai kalkulator interaktif ↓</div>'
+          + '<div class="mkb-ov-hint">Baca alur ini sebelum memulai kalkulator interaktif ↓</div>'
           + overviewSections
           + '</div>'
         : '')
 
-    + '</div>' // end mkb-body
+    + '</div>'
 
-    // ── Divider / CTA ──────────────────────────────────────
     + '<div class="mkb-algo-start">'
     + '<div class="mkb-algo-line"></div>'
     + '<button class="mkb-algo-btn" onclick="toggleMustKnow(\'' + uid + '\')">'
@@ -12877,7 +13029,89 @@ function renderMustKnowBox(innerHtml, algoBlocks) {
     + '<div class="mkb-algo-line"></div>'
     + '</div>'
 
-    + '</div>'; // end must-know-box
+    + '</div>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// DOWNLOAD FLOWCHART AS IMAGE
+// ═══════════════════════════════════════════════════════════════
+function handleFlowchartDownload(btn) {
+  var title = btn.getAttribute('data-dltitle') || 'Alur-Diagnosis';
+  downloadFlowchart(btn, title);
+}
+
+function downloadFlowchart(btnEl, title) {
+  var btn = btnEl;
+  var container = null;
+  // Walk up to find fc-wrap
+  var parent = btn.parentNode;
+  for (var i = 0; i < 10 && parent; i++) {
+    var fc = parent.querySelector ? parent.querySelector('.fc-wrap') : null;
+    if (fc) { container = fc; break; }
+    parent = parent.parentNode;
+    if (!parent || parent === document.body) break;
+  }
+  // Also check algo-card
+  if (!container && btn.parentNode) {
+    var algoCard = btn.closest ? btn.closest('.card') : null;
+    if (algoCard) container = algoCard.querySelector('.algo-node') || algoCard;
+  }
+  if (!container) {
+    alert('Tidak dapat menemukan bagan. Coba scroll ke bagan terlebih dahulu.');
+    return;
+  }
+  btn.textContent = '⏳ Menyiapkan...';
+  btn.disabled = true;
+  if (typeof html2canvas === 'function') {
+    var clone = container.cloneNode(true);
+    clone.style.cssText = 'position:fixed;top:-9999px;left:-9999px;background:#fff;padding:24px;font-family:system-ui,sans-serif;overflow:visible;min-width:max-content;';
+    document.body.appendChild(clone);
+    html2canvas(clone, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false })
+      .then(function(canvas) {
+        document.body.removeChild(clone);
+        var link = document.createElement('a');
+        link.download = (title||'Alur-Diagnosis').replace(/[^a-zA-Z0-9À-ɏ _-]/g,'') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Tersimpan!';
+        btn.disabled = false;
+        setTimeout(function(){ btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Bagan PNG'; }, 3000);
+      }).catch(function() {
+        document.body.removeChild(clone);
+        downloadFlowchartSVG(container, title, btn);
+      });
+  } else {
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.onload = function() { downloadFlowchart(btnEl, title); };
+    script.onerror = function() { downloadFlowchartSVG(container, title, btn); };
+    document.head.appendChild(script);
+    btn.textContent = '⏳ Loading library...';
+  }
+}
+
+function downloadFlowchartSVG(container, title, btn) {
+  var w = (container.scrollWidth || 600) + 40;
+  var h = (container.scrollHeight || 400) + 60;
+  var safeTitle = (title || 'Alur Diagnosis').replace(/[<>&"]/g,'');
+  var svgStr = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">'
+    + '<rect width="100%" height="100%" fill="white"/>'
+    + '<text x="20" y="28" font-family="system-ui,sans-serif" font-size="14" font-weight="bold" fill="#0f7b6c">' + safeTitle + '</text>'
+    + '<foreignObject x="10" y="40" width="' + (w-20) + '" height="' + (h-50) + '">'
+    + '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:system-ui,sans-serif;font-size:11px;">'
+    + container.innerHTML + '</div></foreignObject></svg>';
+  var blob = new Blob([svgStr], {type:'image/svg+xml'});
+  var url  = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.download = safeTitle.replace(/\s+/g,'-') + '.svg';
+  link.href = url; link.click();
+  URL.revokeObjectURL(url);
+  if (btn) {
+    btn.textContent = '✅ SVG Tersimpan!';
+    btn.disabled = false;
+    setTimeout(function(){ btn.textContent = '📥 Download Bagan PNG'; }, 3000);
+  }
 }
 
 function toggleMustKnow(uid) {
@@ -12893,44 +13127,45 @@ function toggleMustKnow(uid) {
   } else {
     body.style.display = 'block';
     btn.style.transform  = 'rotate(0deg)';
-    if (lbl) lbl.textContent = '▼ Mulai Alur Diagnosis';
+    if (lbl) lbl.textContent = '▼ Mulai Alur Interaktif';
   }
 }
 
-// ════════════════════════════════════════════════════════════════
-// LAYER 6 — FOOTER / INITIALIZATION
-// DOMContentLoaded: restore weight, init home, register Service Worker.
-// PWA: manifest.json + service-worker.js di direktori yang sama.
-// ════════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════
-// FOOTER
-// ═══════════════════════════════════════════
+
 function renderFooter(p) {
-  var refs = '';
-  if (p.refs && p.refs.length > 0) {
-    refs = '<div style="margin-top:6px"><strong>Referensi:</strong><br>' + p.refs.join('<br>') + '</div>';
+  if (!p.refs || p.refs.length === 0) return '';
+  var html = '<div class="card refs-card"><div class="card-title">📚 Referensi</div><ul class="refs-list">';
+  for (var i = 0; i < p.refs.length; i++) {
+    html += '<li>' + p.refs[i] + '</li>';
   }
-  return '<div class="protocol-footer">'
-       + '<div>Diperbarui: ' + (p.updated || '2026') + '</div>'
-       + refs
-       + '<div style="margin-top:8px"><em>Alat bantu klinis. Sesuaikan dengan panduan RS dan supervisi dokter senior.</em></div>'
-       + '</div>';
+  html += '</ul>';
+  if (p.updated) {
+    html += '<div class="refs-updated">Terakhir diperbarui: ' + p.updated + '</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
-// ═══════════════════════════════════════════
-// START
-// ═══════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// LAYER 6 — FOOTER / INIT
+// ════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
-  var savedW = parseFloat(sessionStorage.getItem('cp_weight')) || 0;
-  if (savedW > 0) { weight = savedW; }
+  // ── Init specialty grid (MUST be first) ─────────────────
   initHome();
-  // Register Service Worker for PWA offline support
+
+  // ── Restore BB from sessionStorage ──────────────────────
+  var savedW = parseFloat(sessionStorage.getItem('cp_weight')) || 0;
+  if (savedW > 0) {
+    weight = savedW;
+    updateHomeWeightBar();
+  }
+
+  // ── Register service worker for PWA offline support ─────
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
       .catch(function(){/* SW not available in file:// mode */});
   }
 });
-
 
 </script>
 </body>
