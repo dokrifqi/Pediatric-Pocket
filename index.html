@@ -4,14 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f7b6c" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Catatan Pediatri">
-<meta name="description" content="Panduan klinis pediatri — 93 protokol, kalkulator dosis, dan crash cart emergensi untuk dokter.">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Catatan Pediatri">
+<meta name="application-name" content="Catatan Pediatri">
+<meta name="theme-color" content="#0f7b6c" id="theme-color-meta">
+<meta name="description" content="Panduan klinis pediatri — 117 protokol, kalkulator dosis real-time, dan Quick Crash Cart emergensi untuk dokter anak.">
+<meta name="keywords" content="pediatri,pediatric,dokter anak,neonatologi,dosis obat,kalkulator medis">
+<meta name="author" content="dr. Mochamad Rifqie Nugraha Kamal">
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <title>Catatan Pediatri — dr. Mochamad Rifqie Nugraha Kamal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -47,13 +51,40 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { font-size: 16px; scroll-behavior: smooth; }
-body { font-family: var(--font); background: var(--slate-100); color: var(--slate-900); min-height: 100vh; overflow-x: hidden; }
+body { font-family: var(--font); background: var(--slate-100); color: var(--slate-900); height: 100vh; overflow: hidden; }
 
 /* ════════════════════════════════
    SCREENS
 ════════════════════════════════ */
-.screen { display: none; flex-direction: column; min-height: 100vh; }
-.screen.active { display: flex; }
+.screen {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 10;
+  overflow: hidden;
+}
+.screen.active { display: flex; flex-direction: column; }
+/* screen-detail: fixed + flex column (header sticky, content scrolls) */
+#screen-detail {
+  overflow: hidden;
+}
+/* header stays fixed height */
+#screen-detail .detail-header {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+/* content takes remaining height and scrolls */
+#screen-detail #detail-content {
+  flex: 1;
+  min-height: 0;          /* critical for flex children to scroll */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
 
 /* ════════════════════════════════
    HOME HEADER (teal gradient)
@@ -271,8 +302,11 @@ body { font-family: var(--font); background: var(--slate-100); color: var(--slat
 ════════════════════════════════ */
 .detail-content {
   max-width:680px; margin:0 auto;
-  padding:14px 16px 110px;
+  padding:14px 16px 120px;
   display:flex; flex-direction:column; gap:12px;
+  /* scroll handled by parent #detail-content */
+  overflow-x: visible;
+  overflow-y: visible;
 }
 
 /* ════════════════════════════════
@@ -339,10 +373,43 @@ body { font-family: var(--font); background: var(--slate-100); color: var(--slat
 .callout-warning .callout-title, .callout-warning .callout-body { color:var(--amber-900); }
 .callout-danger .callout-title, .callout-danger .callout-body { color:#881337; }
 
-.table-card { background:#fff; border:1px solid var(--slate-200); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.table-card { 
+  background:#fff; 
+  border:1px solid var(--slate-200); 
+  border-radius:var(--radius); 
+  overflow: hidden;    /* rounded corners */
+  box-shadow:var(--shadow); 
+}
+.table-card .table-wrap { 
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  /* rounded bottom inside card */
+  border-radius: 0 0 var(--radius) var(--radius);
+  /* Scroll hint */
+  background:
+    linear-gradient(90deg, #fff 30%, transparent) left,
+    linear-gradient(90deg, transparent, #fff 70%) right,
+    radial-gradient(farthest-side at 0 50%, rgba(15,123,108,.12), transparent) left,
+    radial-gradient(farthest-side at 100% 50%, rgba(15,123,108,.12), transparent) right;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-size: 32px 100%, 32px 100%, 8px 100%, 8px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 .table-title-bar { background:var(--slate-50); border-bottom:1px solid var(--slate-100); padding:10px 14px; font-size:13px; font-weight:700; color:var(--slate-700); }
-.table-wrap { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; font-size:13px; }
+.table-wrap { 
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  width: 100%;
+}
+table { 
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse; 
+  font-size: 13px; 
+}
 th { padding:8px 12px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--slate-500); background:var(--slate-50); border-bottom:1px solid var(--slate-100); }
 td { padding:10px 12px; color:var(--slate-700); border-bottom:1px solid var(--slate-100); }
 tr:last-child td { border-bottom:none; }
@@ -413,7 +480,7 @@ tr:hover td { background:var(--slate-50); }
 /* ════════════════════════════════
    TENTANG PAGE
 ════════════════════════════════ */
-.about-header { background:linear-gradient(145deg,var(--teal-dark),var(--teal-mid)); padding:52px 20px 32px; text-align:center; }
+.about-header { background:linear-gradient(145deg,var(--teal-dark),var(--teal-mid)); padding: calc(52px + env(safe-area-inset-top, 0px)) 20px 32px; text-align:center; }
 .about-avatar { width:80px; height:80px; background:rgba(255,255,255,.2); border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:40px; margin:0 auto 14px; }
 .about-name { font-size:22px; font-weight:800; color:#fff; }
 .about-role { font-size:13px; color:rgba(255,255,255,.75); margin-top:4px; font-weight:500; }
@@ -752,12 +819,7 @@ tr:hover td { background:var(--slate-50); }
 /* ══════════════════════════════════════════════════
    FEATURE 4a: SCREEN TRANSITIONS (slide-in / fade)
 ══════════════════════════════════════════════════ */
-.screen {
-  display: none;
-  flex-direction: column;
-  min-height: 100vh;
-  /* transitions via class toggling */
-}
+
 .screen.active {
   display: flex;
   animation: screenSlideIn .22s cubic-bezier(.22,.68,0,1.2) both;
@@ -911,9 +973,9 @@ tr:hover td { background:var(--slate-50); }
 .must-know-box {
   margin: 0 0 4px;
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;        /* was hidden — clipped wide flowcharts */
   border: 2px solid #fbbf24;
-  background: #fff;
+  background: var(--bg-surface, #fff);
   box-shadow: 0 2px 16px rgba(251,191,36,.18), 0 1px 4px rgba(0,0,0,.06);
 }
 
@@ -977,8 +1039,9 @@ tr:hover td { background:var(--slate-50); }
 /* Body */
 .mkb-body {
   padding: 4px 0 0;
-  background: #fff;
+  background: var(--bg-surface, #fff);
   animation: mkbSlideIn .22s ease;
+  overflow: visible;
 }
 @keyframes mkbSlideIn {
   from { opacity: 0; transform: translateY(-6px); }
@@ -1110,8 +1173,7 @@ tr:hover td { background:var(--slate-50); }
 /* Overview wrapper */
 .mkb-overview-wrap {
   padding: 0 10px 10px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  /* overflow handled by fc-chart-wrap itself */
 }
 .mkb-ov-hint {
   margin: 6px 0 10px;
@@ -1519,12 +1581,11 @@ tr:hover td { background:var(--slate-50); }
 
 #screen-drug {
   background: var(--bg-base, #f1f5f9);
-  min-height: 100vh;
 }
 
 /* Header */
 .drug-header {
-  padding: 18px 16px 14px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
   background: linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
 }
 .drug-header-title {
@@ -2016,14 +2077,27 @@ tr:hover td { background:var(--slate-50); }
   position: relative;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   cursor: grab;
   background: var(--bg-surface, #fff);
   border-radius: 14px;
   border: 1px solid var(--border, #e2e8f0);
-  padding: 16px 10px 10px;
-  min-height: 200px;
+  padding: 20px 20px 16px;
+  min-height: 100px;
+  /* max-height DIHAPUS — bagan tampil penuh */
+  /* white-space:nowrap removed */
+  overscroll-behavior: contain;
 }
 .fc-chart-wrap:active { cursor: grabbing; }
+/* fc-chart itself must allow horizontal overflow */
+.fc-chart-wrap .fc-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: normal;
+  min-width: max-content;
+  width: max-content;
+}
 
 /* Toolbar: zoom controls */
 .fc-toolbar {
@@ -2069,10 +2143,11 @@ tr:hover td { background:var(--slate-50); }
 .fc-chart {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0;
   min-width: max-content;
-  transform-origin: top center;
+  width: max-content;
+  transform-origin: top left;
   transition: transform .2s ease;
 }
 
@@ -2081,9 +2156,11 @@ tr:hover td { background:var(--slate-50); }
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 16px;
   min-width: max-content;
+  width: max-content;
+  flex-wrap: nowrap;
 }
 .fc-col-wrap {
   display: flex;
@@ -2258,11 +2335,11 @@ tr:hover td { background:var(--slate-50); }
    SCREEN DOKUMEN
 ══════════════════════════════════════════════════════════════ */
 
-#screen-docs { background: var(--bg-base, #f1f5f9); min-height: 100vh; }
+#screen-docs { background: var(--bg-base, #f1f5f9); }
 
 /* Header */
 .docs-header {
-  padding: 18px 16px 14px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
   background: linear-gradient(135deg, #0369a1, #0284c7);
 }
 .docs-header-title { font-size: 18px; font-weight: 800; color: #fff; }
@@ -2548,6 +2625,572 @@ tr:hover td { background:var(--slate-50); }
   .docs-loading-text span { color: #6e7681; }
 }
 
+
+/* ════════════════════════════════════════════════════════════
+   FLOWCHART FULLSCREEN MODAL
+════════════════════════════════════════════════════════════ */
+.fc-fullscreen-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--bg-base, #f1f5f9);
+  display: flex;
+  flex-direction: column;
+}
+.fc-fs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--teal-dark, #0a5a4e);
+  flex-shrink: 0;
+  min-height: 52px;
+}
+.fc-fs-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-fs-close, .fc-fs-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.fc-fs-close:active, .fc-fs-dl:active {
+  background: rgba(255,255,255,.28);
+}
+.fc-fs-zoom-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--bg-surface, #fff);
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  flex-shrink: 0;
+}
+.fc-fs-hint {
+  font-size: 10px;
+  color: var(--text-muted, #94a3b8);
+  margin-left: 4px;
+}
+.fc-fs-body {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  cursor: grab;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.fc-fs-body:active { cursor: grabbing; }
+#fc-fs-content {
+  transform-origin: top center;
+  min-width: max-content;
+}
+
+/* Fullscreen button in toolbar */
+.fc-fullscreen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-surface, #fff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal-dark, #0a5a4e);
+  cursor: pointer;
+  transition: all .15s;
+}
+.fc-fullscreen-btn:active {
+  background: var(--teal-pale, #f0faf8);
+  border-color: var(--teal, #0f7b6c);
+}
+
+/* Weight bar collapsible */
+.weight-bar-wrap {
+  padding: 0;
+}
+.wb-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--font);
+  color: #fff;
+  text-align: left;
+}
+.wb-toggle:active { background: rgba(255,255,255,.22); }
+.wb-toggle-icon { font-size: 16px; flex-shrink: 0; }
+.wb-toggle-label { flex: 1; font-size: 13px; font-weight: 700; }
+.wb-toggle-caret {
+  flex-shrink: 0;
+  transition: transform .2s;
+  opacity: .8;
+}
+.wb-expand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.08);
+  border-radius: 0 0 12px 12px;
+  padding: 10px 12px;
+  margin-top: -4px;
+  animation: wb-open .2s ease;
+}
+@keyframes wb-open {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .fc-fs-zoom-bar { background: #161b22; border-color: #30363d; }
+  .fc-fs-body { background: #0d1117; }
+  .fc-fullscreen-btn { background: #161b22; border-color: #30363d; color: #5eead4; }
+}
+
+
+/* All scrollable screens: overflow-y inside fixed container */
+#screen-home, #screen-specialty, #screen-drug,
+#screen-docs, #screen-about {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ══════════════════════════════════════════════════
+   TABEL HORIZONTAL SCROLL — semua tabel bisa digeser
+══════════════════════════════════════════════════ */
+
+/* Semua .table-wrap di manapun bisa scroll horizontal */
+.table-wrap,
+.card .table-wrap,
+.table-card .table-wrap,
+.section-body .table-wrap,
+.criteria-body .table-wrap,
+.mkb-body .table-wrap {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  width: 100%;
+  /* Fade indicator di kanan */
+  position: relative;
+}
+
+/* Tabel minimal fit konten, tidak dipaksa width:100% */
+.table-wrap table {
+  width: max-content !important;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+/* Tap scroll hint — gradient fade di sisi kanan */
+.table-wrap::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.9));
+  pointer-events: none;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Card yang berisi tabel: jangan overflow:hidden */
+.card:has(.table-wrap),
+.table-card {
+  overflow: visible !important;
+}
+/* Fallback untuk browser tanpa :has() */
+.card.has-table { overflow: visible !important; }
+
+/* TH dan TD jangan wrap text — biarkan tabel melebar */
+.table-wrap th,
+.table-wrap td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+/* Kolom pertama (langkah/nama) boleh wrap */
+.table-wrap th:first-child,
+.table-wrap td:first-child {
+  white-space: normal;
+  min-width: 80px;
+  max-width: 120px;
+}
+/* Kolom deskripsi/tindakan boleh lebih lebar */
+.table-wrap td:nth-child(2),
+.table-wrap td:nth-child(3) {
+  white-space: normal;
+  min-width: 120px;
+  max-width: 220px;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .table-wrap::after {
+    background: linear-gradient(90deg, transparent, rgba(22,27,34,.9));
+  }
+}
+
+/* App container */
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE MANUAL TOGGLE — .dark class on <html>
+   Overrides system preference when user toggles manually
+═══════════════════════════════════════════════════════════ */
+html.dark {
+  color-scheme: dark;
+}
+html.dark body {
+  background: #0d1117;
+  color: #e6edf3;
+}
+html.dark {
+  --bg-base:        #0d1117;
+  --bg-surface:     #161b22;
+  --bg-surface2:    #21262d;
+  --bg-header:      linear-gradient(145deg, #0a2a24 0%, #0f4a3f 100%);
+  --border:         #30363d;
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #6e7681;
+  --nav-bg:         rgba(22,27,34,.96);
+  --nav-border:     #30363d;
+  --search-bg:      #161b22;
+  --card-shadow:    0 1px 4px rgba(0,0,0,.4);
+  --formula-bg:     #161b22;
+  --table-head-bg:  #21262d;
+  --table-row-hover:#21262d;
+  --detail-header-bg: rgba(22,27,34,.95);
+  --input-bg:       #21262d;
+  --input-border:   #30363d;
+  --teal-light:     rgba(15,123,108,.35);
+  --teal-pale:      rgba(15,123,108,.15);
+  --amber-50:       rgba(120,53,15,.25);
+  --rose-50:        rgba(136,19,55,.25);
+  --green-50:       rgba(20,83,45,.25);
+  --slate-50:       #21262d;
+  --slate-100:      #30363d;
+  --slate-200:      #3d444d;
+  --slate-300:      #4d5562;
+  --slate-400:      #6e7681;
+  --slate-500:      #8b949e;
+  --slate-600:      #9da8b3;
+  --slate-700:      #b1bac4;
+  --slate-800:      #c9d1d9;
+  --slate-900:      #e6edf3;
+  --shadow:         0 1px 4px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:      0 4px 16px rgba(0,0,0,.5);
+}
+
+
+
+/* ════════════════════════════════════════════════════
+   FLOWCHART TOGGLE — Sembunyikan/tampilkan bagan
+════════════════════════════════════════════════════ */
+.fc-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface, #fff);
+  border: 1.5px solid var(--teal-light, #e0f5f2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-dark, #0a5a4e);
+  cursor: pointer;
+  transition: all .2s;
+  margin: 6px 10px 6px;
+}
+.fc-toggle-btn:active {
+  transform: scale(.96);
+  background: var(--teal-pale, #f0faf8);
+}
+.fc-toggle-caret {
+  transition: transform .25s cubic-bezier(.22,.68,0,1.2);
+  flex-shrink: 0;
+}
+.fc-toggle-caret.open { transform: rotate(180deg); }
+
+/* Collapsible chart wrap */
+.fc-collapsible {
+  /* overflow:hidden removed — was clipping wide flowcharts */
+  overflow: visible;
+}
+.fc-collapsible.hidden {
+  display: none;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .fc-toggle-btn { 
+    background: #21262d; 
+    border-color: rgba(15,123,108,.3); 
+    color: #5eead4; 
+  }
+}
+html.dark .fc-toggle-btn { 
+  background: #21262d; 
+  border-color: rgba(15,123,108,.3); 
+  color: #5eead4; 
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE COMPREHENSIVE — overrides ALL hardcoded #fff colors
+══════════════════════════════════════════════════════════════ */
+
+/* Background colors */
+html.dark body,
+html.dark #app {
+  background: #0d1117 !important;
+  color: #e6edf3;
+}
+
+/* ALL white cards/surfaces */
+html.dark .card,
+html.dark .proto-card,
+html.dark .specialty-card,
+html.dark .formula-card,
+html.dark .stat-card,
+html.dark .table-card,
+html.dark .about-card,
+html.dark .ballard-summary,
+html.dark .ballard-section-card,
+html.dark .crash-card,
+html.dark .crash-weight-wrap,
+html.dark .drug-card,
+html.dark .docs-card,
+html.dark .kpsp-card,
+html.dark .mchat-card,
+html.dark .fluid-card,
+html.dark .section-block,
+html.dark .tb-score-wrap,
+html.dark .stable-card,
+html.dark .transfusi-wrap,
+html.dark .drug-indication-item {
+  background: #161b22 !important;
+  border-color: #30363d !important;
+}
+
+/* Nested surfaces */
+html.dark .drug-result-row { background: rgba(15,123,108,.12) !important; border-color: rgba(15,123,108,.3) !important; }
+html.dark .fluid-result-item { background: rgba(15,123,108,.12) !important; }
+html.dark .formula-card--maxed { background: rgba(220,38,38,.15) !important; }
+
+/* Headers/bars */
+html.dark .drug-bb-wrap,
+html.dark .drug-search-wrap,
+html.dark .docs-search-wrap,
+html.dark .wb-expand,
+html.dark .weight-bar-wrap { 
+  background: #161b22 !important; 
+  border-color: #30363d !important; 
+}
+
+/* Inputs */
+html.dark input,
+html.dark .weight-input,
+html.dark .drug-bb-input,
+html.dark .drug-search-input,
+html.dark .search-input,
+html.dark .docs-search-input,
+html.dark .extra-input,
+html.dark .kpsp-age-select,
+html.dark select { 
+  background: #21262d !important; 
+  border-color: #30363d !important;
+  color: #e6edf3 !important; 
+}
+html.dark input::placeholder,
+html.dark .search-input::placeholder { color: #6e7681 !important; }
+
+/* Navigation */
+html.dark .bottom-nav { 
+  background: rgba(22,27,34,.97) !important; 
+  border-top-color: #30363d !important; 
+}
+html.dark .nav-btn { color: #6e7681; }
+html.dark .nav-btn.active { color: var(--teal-mid); }
+html.dark .nav-label { color: inherit; }
+
+/* Detail screen header */
+html.dark .detail-header { 
+  background: rgba(13,17,23,.95) !important; 
+  border-bottom-color: #30363d !important;
+  backdrop-filter: blur(14px);
+}
+
+/* Chips & tags */
+html.dark .drug-cat-chip { background: #21262d !important; border-color: #30363d !important; color: #8b949e !important; }
+html.dark .drug-cat-chip.drug-cat-active { background: var(--teal-dark) !important; border-color: var(--teal) !important; color: #fff !important; }
+html.dark .docs-cat-chip { background: #21262d !important; border-color: #30363d !important; color: #8b949e !important; }
+html.dark .drug-route-badge { background: #21262d !important; color: #8b949e !important; }
+html.dark .drug-ind-label { border-color: rgba(255,255,255,.15) !important; }
+html.dark .drug-ind-days { background: rgba(255,255,255,.1) !important; }
+
+/* Text colors */
+html.dark .drug-name,
+html.dark .drug-header-title,
+html.dark .docs-header-title,
+html.dark .about-name,
+html.dark .proto-title,
+html.dark .specialty-name,
+html.dark .detail-title,
+html.dark .section-title,
+html.dark .formula-label,
+html.dark .card-title,
+html.dark .table-title-bar h3,
+html.dark .mkb-title { 
+  color: #e6edf3 !important; 
+}
+html.dark .drug-formula-val,
+html.dark .drug-note,
+html.dark .proto-meta,
+html.dark .section-body,
+html.dark p,
+html.dark li { 
+  color: #8b949e !important; 
+}
+
+/* Tables */
+html.dark table { color: #8b949e; }
+html.dark th, html.dark .table-title-bar { 
+  background: #21262d !important; 
+  color: #8b949e !important;
+  border-color: #30363d !important;
+}
+html.dark td { border-bottom-color: #30363d !important; }
+html.dark tr:hover td { background: #21262d !important; }
+
+/* Must Know Box */
+html.dark .must-know-box { 
+  background: #1a1208 !important; 
+  border-color: #78350f !important; 
+  box-shadow: 0 2px 16px rgba(0,0,0,.5) !important;
+}
+html.dark .mkb-header { 
+  background: linear-gradient(135deg,#1c1208 0%,#2a1a08 100%) !important; 
+  border-bottom-color: #78350f !important; 
+}
+html.dark .mkb-body { background: #161b22 !important; }
+html.dark .mkb-badge { background: rgba(251,191,36,.15) !important; color: #fbbf24 !important; }
+html.dark .mkb-section-pill { background: #21262d !important; color: #8b949e !important; }
+html.dark .mkb-pill-amber { background: rgba(120,53,15,.3) !important; color: #fbbf24 !important; border-color: #78350f !important; }
+html.dark .mkb-pill-teal  { background: rgba(15,123,108,.2) !important; color: #5eead4 !important; border-color: rgba(15,123,108,.4) !important; }
+html.dark .mkb-algo-start { 
+  background: linear-gradient(135deg,#1c1208 0%,#2a1a08 100%) !important; 
+  border-top-color: #78350f !important; 
+}
+html.dark .mkb-algo-btn { 
+  background: linear-gradient(135deg,var(--teal-dark),var(--teal)) !important; 
+  color: #fff !important; 
+}
+html.dark .mkb-toggle { background: rgba(251,191,36,.1) !important; color: #fbbf24 !important; }
+
+/* Flowchart */
+html.dark .fc-chart-wrap { background: #161b22 !important; border-color: #30363d !important; }
+html.dark .fc-node { background: #21262d !important; border-color: #30363d !important; box-shadow: 0 2px 8px rgba(0,0,0,.4) !important; }
+html.dark .fc-node-title { color: #e6edf3 !important; }
+html.dark .fc-node-body { color: #8b949e !important; border-top-color: rgba(255,255,255,.08) !important; }
+html.dark .fc-toolbar { background: #21262d !important; border-color: #30363d !important; }
+html.dark .fc-zoom-btn { background: #161b22 !important; border-color: #30363d !important; color: #8b949e !important; }
+html.dark .fc-zoom-reset { background: none !important; border-color: #30363d !important; color: #6e7681 !important; }
+html.dark .fc-fullscreen-btn { background: #21262d !important; border-color: #30363d !important; color: #5eead4 !important; }
+html.dark .fc-toggle-btn { background: #21262d !important; border-color: rgba(15,123,108,.3) !important; color: #5eead4 !important; }
+html.dark .fc-hint { color: #6e7681 !important; }
+html.dark .fc-hbar-seg, html.dark .fc-vline { border-color: #4d5562 !important; background: #4d5562 !important; }
+html.dark .fc-vline-drop { border-color: #4d5562 !important; }
+html.dark .fc-arrow { color: #6e7681 !important; }
+
+/* Algo interactive */
+html.dark .algo-card,
+html.dark .algo-node { background: #161b22 !important; border-color: #30363d !important; }
+html.dark .algo-node-title { color: #e6edf3 !important; }
+html.dark .algo-node-body { color: #8b949e !important; }
+html.dark .algo-action { color: #8b949e !important; border-top-color: #30363d !important; }
+html.dark .branch-btn { background: #21262d !important; border-color: #30363d !important; color: #e6edf3 !important; }
+html.dark .branch-danger { background: rgba(220,38,38,.15) !important; border-color: rgba(220,38,38,.4) !important; color: #f87171 !important; }
+html.dark .branch-warning { background: rgba(217,119,6,.15) !important; border-color: rgba(217,119,6,.4) !important; color: #fbbf24 !important; }
+html.dark .branch-success { background: rgba(22,163,74,.15) !important; border-color: rgba(22,163,74,.4) !important; color: #4ade80 !important; }
+html.dark .algo-step-connector { background: #30363d !important; }
+html.dark .algo-back-btn { background: #21262d !important; border-color: #30363d !important; color: #8b949e !important; }
+html.dark .algo-header { background: #21262d !important; border-bottom-color: #30363d !important; }
+
+/* Search bars */
+html.dark .search-bar { background: #21262d !important; border-color: #30363d !important; }
+
+/* Home screen */
+html.dark .home-header { background: linear-gradient(145deg,#0a2a24,#0f4a3f) !important; }
+html.dark .specialty-header { background: linear-gradient(145deg,#0a2a24,#0f4a3f) !important; }
+html.dark .drug-header { background: linear-gradient(135deg,#0a2a24,#0a5a4e) !important; }
+html.dark .docs-header { background: linear-gradient(135deg,#0c1e3b,#0a2a5a) !important; }
+html.dark .about-header { background: linear-gradient(145deg,#0a2a24,#0f4a3f) !important; }
+
+/* Weight bar */
+html.dark .wb-toggle { background: rgba(15,123,108,.2) !important; border-color: rgba(15,123,108,.3) !important; color: #5eead4 !important; }
+html.dark .wb-expand { background: #21262d !important; }
+html.dark .weight-label { color: #8b949e !important; }
+
+/* Drug indicator dots */
+html.dark .drug-ind-sep { background: linear-gradient(90deg,transparent,#30363d,transparent) !important; }
+
+/* Crashes/emergency */
+html.dark .crash-fab-label { color: #fff; }
+
+/* Scrollbar (webkit) */
+html.dark ::-webkit-scrollbar { width: 5px; height: 5px; }
+html.dark ::-webkit-scrollbar-track { background: #161b22; }
+html.dark ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #4d5562; }
+
+/* Ensure fc-chart-wrap inside MKB shows full flowchart */
+.mkb-body .fc-chart-wrap,
+.mkb-overview-wrap .fc-chart-wrap {
+  overflow: auto !important;
+  min-height: 120px;
+}
+.mkb-body .fc-collapsible,
+.mkb-overview-wrap .fc-collapsible {
+  overflow: visible !important;
+}
 </style>
 </head>
 <body>
@@ -2643,6 +3286,20 @@ tr:hover td { background:var(--slate-50); }
     <div class="about-role">Medical Doctor</div>
   </div>
   <div class="about-body">
+    <!-- PWA Install Button -->
+    <button id="pwa-install-btn" onclick="triggerPWAInstall()"
+      style="display:none;align-items:center;gap:10px;width:100%;padding:14px 16px;
+             background:linear-gradient(135deg,var(--teal),var(--teal-dark));
+             border:none;border-radius:16px;cursor:pointer;font-family:var(--font);
+             color:#fff;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(15,123,108,.35);
+             margin-bottom:4px;">
+      <span style="font-size:22px">📲</span>
+      <div style="text-align:left">
+        <div>Install Aplikasi</div>
+        <div style="font-size:11px;opacity:.8;font-weight:500">Simpan ke layar utama untuk akses offline</div>
+      </div>
+    </button>
+
     <div class="about-card">
       <div class="about-card-title">Tentang Aplikasi</div>
       <div class="about-list">
@@ -2694,6 +3351,34 @@ tr:hover td { background:var(--slate-50); }
     <span class="nav-icon">👨‍⚕️</span>
     <span class="nav-label">Tentang</span>
   </button>
+<!-- Flowchart fullscreen modal -->
+<div id="fc-fullscreen" class="fc-fullscreen-modal" style="display:none">
+  <div class="fc-fs-bar">
+    <button class="fc-fs-close" onclick="closeFcFullscreen()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      Tutup
+    </button>
+    <div class="fc-fs-title" id="fc-fs-title">Alur Tatalaksana</div>
+    <button class="fc-fs-dl" id="fc-fs-dl-btn" onclick="fcFullscreenDownload()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      PNG
+    </button>
+  </div>
+  <div class="fc-fs-zoom-bar">
+    <button class="fc-zoom-btn" onclick="fcZoom('fc-fs-wrap',-1)">−</button>
+    <span class="fc-zoom-label" id="fc-fs-wrap-zl">100%</span>
+    <button class="fc-zoom-btn" onclick="fcZoom('fc-fs-wrap',1)">+</button>
+    <button class="fc-zoom-reset" onclick="fcZoomReset('fc-fs-wrap')">↺</button>
+    <span class="fc-fs-hint">Geser = pan · Cubit = zoom</span>
+  </div>
+  <div class="fc-fs-body" id="fc-fs-wrap"
+       onwheel="fcWheelZoom(event,'fc-fs-wrap')"
+       onmousedown="fcPanStart(event,'fc-fs-wrap')"
+       ontouchstart="fcTouchStart(event,'fc-fs-wrap')">
+    <div id="fc-fs-content"></div>
+  </div>
+</div>
+
 </div>
 
 
@@ -2730,6 +3415,11 @@ tr:hover td { background:var(--slate-50); }
   <div id="crash-content" class="crash-content"></div>
   <div style="height:24px"></div>
 </div>
+
+<!-- Dark Mode Toggle FAB -->
+<button id="dark-mode-fab" class="dark-mode-fab" onclick="toggleDarkMode()" aria-label="Toggle dark mode" title="Mode Gelap">
+  <span id="dark-mode-icon">🌙</span>
+</button>
 
 <!-- FAB: Quick Crash Cart -->
 <button id="crash-fab" class="crash-fab" onclick="openCrash()" aria-label="Quick Crash Cart">
@@ -2919,52 +3609,91 @@ const PROTOCOLS = [
       "Obat: epinefrin 1:10.000, NS 0.9%",
       "Tim minimal 2 orang: 1 airway, 1 kompresi",
     ]},
-    {kind:"algo", id:"resus", title:"Algoritma Resusitasi", entry:"lahir", formulas:{
-      "et-size":{label:"Ukuran Pipa ET", expr:"GA < 28mgg → 2.5 | GA 28–36mgg → 3.0 | GA 37–40mgg → 3.5 | GA > 40mgg → 4.0", fn:(w,e)=>{var ga=e.ga||38;return ga<28?2.5:ga<37?3.0:ga<=40?3.5:4.0;}, unit:"mm ID", prec:1, extras:[{key:"ga",label:"Usia Gestasi (minggu)",def:38,min:23,max:44,unit:"mgg"}], note:"NRP 8th Ed 2021. Kedalaman dari bibir (cm) = BB(kg)+6 atau GA/10+6. GA<28mgg→2.5mm | GA28-36mgg→3.0mm | GA37-40mgg→3.5mm | GA>40mgg→4.0mm. Konfirmasi: colorimetric CO₂ + foto thoraks. Cuffed ETT boleh semua usia (AAP 2021)."},
+    {kind:"algo", id:"resus", title:"Algoritma Resusitasi", entry:"lahir",
+    formulas:{
+      "et-size":{label:"Ukuran Pipa ET", expr:"GA < 28mgg → 2.5 | GA 28–36mgg → 3.0 | GA 37–40mgg → 3.5 | GA > 40mgg → 4.0", fn:(w,e)=>{var ga=e.ga||38;return ga<28?2.5:ga<37?3.0:ga<=40?3.5:4.0;}, unit:"mm ID", prec:1, extras:[{key:"ga",label:"Usia Gestasi (minggu)",def:38,min:23,max:44,unit:"mgg"}], note:"NRP 8th Ed 2021. Kedalaman dari bibir (cm) = BB(kg)+6. GA<28→2.5mm, 28-36→3.0mm, 37-40→3.5mm, >40→4.0mm."},
       "et-depth":{label:"Kedalaman ET dari bibir", expr:"BB (kg) + 6 cm", fn:w=>w+6, unit:"cm", prec:1, note:"Aturan '1+6'. Konfirmasi foto thoraks."},
       "epi-iv":{label:"Epinefrin IV (1:10.000)", expr:"0.2 mL × BB (kg)", fn:w=>0.2*w, unit:"mL", prec:2, note:"Via vena umbilikal. Ulang tiap 3–5 menit."},
       "epi-et":{label:"Epinefrin Endotrakeal", expr:"0.5 mL × BB (kg) — hanya bila tidak ada akses IV", fn:w=>0.5*w, unit:"mL", prec:2, note:"Absorpsi ET tidak andal. Segera cari akses IV."},
       "vol-exp":{label:"Ekspansi Volume NS 0.9%", expr:"10 mL × BB (kg)", fn:w=>10*w, unit:"mL", prec:0, note:"Berikan 5–10 menit. Indikasi: pucat, nadi lemah, tidak respons epinefrin."},
+      "vtp-pip":{label:"PIP awal VTP", expr:"20–25 cmH₂O (prematur: 20 cmH₂O)", fn:()=>20, unit:"cmH₂O", prec:0, note:"Naikkan bila dada tidak mengembang. Target: dada naik simetris, HR naik."},
+      "cpap-p":{label:"Tekanan CPAP awal", expr:"TPAE 7 cmH₂O (distres sedang) | 8 cmH₂O (gagal CPAP)", fn:()=>7, unit:"cmH₂O", prec:0, note:"Sesuaikan FiO₂ sesuai target SpO₂ preduktal (lihat tabel)."},
     },
     nodes:{
-      lahir:{title:"Bayi baru lahir",body:"Nilai 3 pertanyaan sebelum pindah ke warmer.",branches:[
-        {l:"Cukup bulan + tonus baik + menangis kuat → YA semua",t:"success",next:"rutin"},
-        {l:"TIDAK pada salah satu → ke warmer segera",t:"warning",next:"awal"},
-      ]},
-      rutin:{title:"Perawatan Rutin",action:"Hangatkan & keringkan, posisikan, IMD. Observasi rutin.",branches:[]},
-      awal:{title:"Langkah Awal — Golden Minute (60 detik)",body:"Hangatkan → posisikan → bersihkan jalan nafas → keringkan & stimulasi.",action:"TIMER MULAI. Evaluasi HR, nafas, tonus dalam 30 detik.",branches:[
-        {l:"HR ≥ 100, nafas baik / menangis",t:"success",next:"post-ok"},
-        {l:"HR ≥ 100, nafas tidak adekuat / tersengal",t:"warning",next:"ppv"},
-        {l:"HR < 100 atau apnea",t:"danger",next:"ppv"},
-      ]},
-      ppv:{title:"PPV — Ventilasi Tekanan Positif",body:"FiO₂ 21% (cukup bulan) atau 21–30% (prematur). Frekuensi 40–60x/menit. PEEP 5 cmH₂O.",action:"MR SOPA bila dada tidak naik: Mask, Reposisi, Suction, buka Oral, Pressure naik, Airway alternatif.",showF:["et-size","et-depth"],branches:[
-        {l:"HR ≥ 100, nafas membaik dalam 30 detik",t:"success",next:"post-ok"},
-        {l:"HR 60–100 setelah 30 detik VTP",t:"warning",next:"ppv-lanjut"},
-        {l:"HR < 60 setelah 30 detik VTP",t:"danger",next:"intubasi"},
-      ]},
-      "ppv-lanjut":{title:"Lanjutkan VTP, periksa ventilasi",action:"Pastikan dada naik. Pertimbangkan intubasi untuk VTP lebih efektif.",branches:[
-        {l:"HR naik ≥ 100",t:"success",next:"post-ok"},
-        {l:"HR < 60 setelah VTP adekuat",t:"danger",next:"intubasi"},
-      ]},
-      intubasi:{title:"Intubasi ET + VTP",body:"Konfirmasi ET: dada naik simetris, CO₂ colorimetrik.",showF:["et-size","et-depth"],action:"VTP via ET. Evaluasi HR tiap 30 detik.",branches:[
-        {l:"HR ≥ 60 setelah intubasi",t:"warning",next:"hr-60"},
-        {l:"HR < 60 — mulai kompresi dada",t:"danger",next:"cpr"},
-      ]},
-      "hr-60":{title:"HR 60–100 — Lanjut VTP via ET",action:"Pertahankan VTP. Singkirkan pneumotoraks (transilluminasi / foto thoraks).",branches:[
-        {l:"HR naik ≥ 100",t:"success",next:"post-ok"},
-        {l:"HR turun < 60",t:"danger",next:"cpr"},
-      ]},
-      cpr:{title:"Kompresi Dada + VTP",body:"Teknik 2 ibu jari. Kedalaman 1/3 diameter AP dada. Rasio kompresi:ventilasi = 3:1 (90 kompresi + 30 VTP = 120/menit).",action:"FiO₂ naik ke 100%. Evaluasi HR tiap 60 detik.",branches:[
-        {l:"HR ≥ 60 setelah 60 detik",t:"success",next:"post-cpr"},
-        {l:"HR < 60 setelah 60 detik",t:"danger",next:"epi"},
-      ]},
-      epi:{title:"Epinefrin — IV atau ET",body:"Utamakan IV (vena umbilikal). Lanjutkan kompresi + VTP.",showF:["epi-iv","epi-et","vol-exp"],action:"Dapat diulang tiap 3–5 menit. Pertimbangkan ekspansi volume bila diduga hipovolemia.",branches:[
-        {l:"HR ≥ 60 setelah epinefrin",t:"success",next:"post-cpr"},
-        {l:"HR < 60 — ulangi epinefrin",t:"danger",next:"refrakter"},
-      ]},
-      refrakter:{title:"Ulangi Epinefrin + Ekspansi Volume",action:"Epinefrin tiap 3–5 menit. NS 10 mL/kgBB bila tanda hipovolemia. Pertimbangkan penyebab reversibel: pneumotoraks, hipovolemia, hipotermia. Bila tidak ada respons ≥ 10 menit → pertimbangkan penghentian resusitasi (diskusi keluarga + tim).",branches:[]},
-      "post-ok":{title:"Stabilisasi pasca resusitasi awal",action:"Weaning FiO₂ bertahap. SpO₂ target: 60–65% menit ke-1, 80–85% menit ke-5, 85–95% menit ke-10. Transfer ke NICU bila perlu.",branches:[]},
-      "post-cpr":{title:"ROSC — Perawatan Pasca Resusitasi",action:"Transfer ke NICU. SpO₂ 90–95%. Hindari hiperoksemia. Bila HIE pada ≥ 36 minggu: pertimbangkan therapeutic hypothermia.",branches:[]},
+      lahir:{title:"Bayi baru lahir", body:"Konseling antenatal, pembagian tugas tim & persiapan alat.",
+        branches:[
+          {l:"Prematur / Bernapas iregular / Menangis lemah / Tonus otot lemah — YA", t:"warning", next:"warmer"},
+          {l:"Tidak ada di atas (aterm, menangis kuat, tonus baik) — TIDAK", t:"success", next:"ibu"},
+        ]},
+      ibu:{title:"Rawat Bersama Ibu", body:"1. Inisiasi menyusu dini\n2. Pantau napas, LDJ, SpO\u2082", action:"Observasi rutin. Tidak perlu tindakan resusitasi.", branches:[]},
+      warmer:{title:"Langkah Awal (60 Detik Emas)", body:"Hangatkan*, posisikan kepala (bersihkan jalan napas jika perlu), keringkan & stimulasi, posisikan kembali.",
+        action:"* Langsung dibungkus plastik tanpa dikeringkan terlebih dahulu kecuali wajah, kemudian dipasang topi — untuk prematur / BBLR.",
+        branches:[
+          {l:"Apnea / Megap-megap / LDJ < 100/menit", t:"danger", next:"vtp"},
+          {l:"Napas spontan dan LDJ ≥ 100/menit", t:"success", next:"spo2-check"},
+        ]},
+      "spo2-check":{title:"Nilai Usaha Napas & LDJ", body:"Pasang monitor SpO₂ preduktal (tangan kanan).",
+        branches:[
+          {l:"Retraksi / Merintih / Takipnea", t:"warning", next:"cpap"},
+          {l:"Sianosis tanpa distres napas / SpO₂ tidak tercapai", t:"neutral", next:"o2-bebas"},
+          {l:"Baik — tidak ada distres, SpO₂ normal", t:"success", next:"ibu"},
+        ]},
+      "o2-bebas":{title:"Oksigen Aliran Bebas", body:"Pertimbangkan CPAP jika prematur.",
+        action:"Sesuaikan FiO₂ untuk mencapai target SpO₂ preduktal.", branches:[
+          {l:"Bila tidak ada perbaikan — pertimbangkan penyakit jantung kongenital", t:"danger", next:"pjk"},
+          {l:"SpO₂ tercapai", t:"success", next:"ibu"},
+        ]},
+      pjk:{title:"Pertimbangkan PJK / Kelainan Kongenital", body:"Bila tidak ada perbaikan dengan O₂ bebas → konsul kardiologi neonatus.", branches:[]},
+      cpap:{title:"CPAP — Distres Napas", body:"TPAE 7 cmH₂O dengan FiO₂ sesuai target SpO₂ preduktal. Monitor SpO₂.",
+        showF:["cpap-p"],
+        branches:[
+          {l:"Retraksi / merintih / takipnea MENETAP — Gagal CPAP", t:"danger", next:"gagal-cpap"},
+          {l:"Membaik", t:"success", next:"ibu"},
+        ]},
+      "gagal-cpap":{title:"Gagal CPAP → Intubasi + VTP", body:"TPAE 8 cmH₂O dengan distres napas berat, SpO₂ tidak tercapai dengan FiO₂ > 40%.",
+        showF:["et-size","et-depth"],
+        action:"Intubasi dan VTP. Pertimbangkan surfaktan.",
+        branches:[
+          {l:"Masuk ke alur VTP setelah intubasi", t:"danger", next:"post-intubasi"},
+        ]},
+      vtp:{title:"VTP — Ventilasi Tekanan Positif", body:"Mulai VTP segera. Monitor SpO₂, pasang monitor EKG bila ada.",
+        showF:["vtp-pip"],
+        action:"Frekuensi 40–60/menit. Pastikan dada mengembang.",
+        branches:[
+          {l:"LDJ ≥ 100/menit setelah VTP efektif", t:"success", next:"spo2-check"},
+          {l:"LDJ < 100/menit — periksa VTP tidak efektif", t:"warning", next:"koreksi-vtp"},
+        ]},
+      "koreksi-vtp":{title:"VTP Tidak Efektif — Koreksi Segera (SRIBTA)", body:"S — Sungkup (reposisi/ganti)\nR — Reposisi kepala\nI — Isap sekresi\nB — Buka mulut\nT — Tekanan dinaikkan (max 40 cmH₂O)\nA — Airway alternative (LMA / intubasi)",
+        branches:[
+          {l:"LDJ ≥ 60/menit setelah koreksi", t:"success", next:"vtp-efektif"},
+          {l:"LDJ < 60/menit — lanjut kompresi", t:"danger", next:"kompresi"},
+        ]},
+      "vtp-efektif":{title:"VTP Efektif", body:"Lanjutkan VTP.\nBila LDJ ≥ 100/menit: pertimbangkan stop VTP.\nBila masih < 100/menit: intubasi bila belum.",
+        branches:[
+          {l:"LDJ ≥ 100/menit, napas spontan", t:"success", next:"pasca"},
+          {l:"LDJ < 60/menit", t:"danger", next:"kompresi"},
+        ]},
+      kompresi:{title:"VTP + Kompresi Dada (1:3)", body:"Selama 60 detik. Sudah diintubasi/dipasang LMA. Naikkan FiO₂ 100%.",
+        showF:["et-size","et-depth"],
+        action:"Rasio 1 ventilasi : 3 kompresi = 30 siklus/menit. Pasang akses IV, pasang OGT.",
+        branches:[
+          {l:"LDJ ≥ 60/menit", t:"success", next:"vtp-efektif"},
+          {l:"LDJ < 60/menit — berikan Epinefrin", t:"danger", next:"epi"},
+        ]},
+      epi:{title:"VTP + Kompresi + Epinefrin IV", body:"Epinefrin IV via vena umbilikal. Ulang tiap 3–5 menit bila LDJ tetap < 60/menit.",
+        showF:["epi-iv","epi-et","vol-exp"],
+        action:"Bila LDJ tetap < 60/menit → pertimbangkan pneumotoraks. Bila pucat/syok: ekspansi volume NS 0.9%.",
+        branches:[
+          {l:"LDJ ≥ 60/menit setelah epinefrin", t:"success", next:"pasca"},
+          {l:"LDJ tetap < 60/menit — evaluasi komplikasi", t:"danger", next:"komplikasi"},
+        ]},
+      "post-intubasi":{title:"Pasca Intubasi — Lanjut VTP", body:"Konfirmasi posisi ET: colorimetric CO₂ + simetrisitas gerak dada.",
+        branches:[
+          {l:"LDJ < 60/menit setelah intubasi + VTP", t:"danger", next:"kompresi"},
+          {l:"LDJ ≥ 60/menit, napas membaik", t:"success", next:"pasca"},
+        ]},
+      komplikasi:{title:"Evaluasi Komplikasi", body:"• Pneumotoraks (asimetris, transilluminasi)\n• Penyumbatan ET\n• Kelainan kongenital berat", branches:[]},
+      pasca:{title:"Perawatan Pasca-Resusitasi", body:"Pantau: suhu, SpO₂, GD, gas darah, tekanan darah.", action:"Transfer ke NICU. Pertimbangkan hipotermia terapeutik bila indikasi HIE ≥ 36 minggu.", branches:[]},
     }},
     {kind:"table", title:"Target SpO₂ Pasca Lahir (tangan kanan / pre-ductal)",
      headers:["Menit ke-","Target SpO₂"],
@@ -2985,29 +3714,59 @@ const PROTOCOLS = [
     {kind:"section",title:"Definisi",body:"Glukosa darah < 47 mg/dL (2.6 mmol/L). Nilai kritis: < 25 mg/dL pada 0–4 jam pertama, atau < 35 mg/dL pada 4–24 jam kehidupan."},
     {kind:"criteria",title:"Bayi risiko tinggi — skrining rutin",items:["Bayi dari ibu Diabetik (IDM)","Kecil Masa Kehamilan (KMK/SGA)","Besar Masa Kehamilan (BMK/LGA)","Prematur late (34–36 minggu)","Asfiksia perinatal / stres perinatal","Hipotermia, sepsis, polisitemia"]},
     {kind:"algo",id:"hipo",title:"Alur Tatalaksana",entry:"mulai",formulas:{
-      "d10":{label:"Bolus D10% IV",expr:"2 mL × BB (kg)",fn:w=>2*w,unit:"mL",prec:1,note:"Berikan 1–2 menit. Segera lanjut infus maintenance."},
-      "gir":{label:"Laju infus maintenance (GIR)",expr:"Rate (mL/jam) = (GIR × 6 × BB) ÷ Kadar Dextrose %",fn:(w,e)=>{const g=e.gir||6,d=e.dex||10;return d>0?(g*6*w)/d:0;},unit:"mL/jam",prec:1,extras:[{key:"gir",label:"Target GIR",def:6,min:4,max:14,unit:"mg/kg/min"},{key:"dex",label:"Konsentrasi Dextrose (%)",def:10,min:5,max:25}],warn:{max:12,msg:"GIR > 12 mg/kgBB/menit → curiga hiperinsulinisme. Konsul endokrin."},note:"GIR awal 6 mg/kgBB/menit. Titrasi naik 2 mg/kgBB/menit tiap 30 menit."},
-      "mix":{label:"Volume D40% untuk campuran target",expr:"D40 (mL) = [(Target% − 10) ÷ 30] × Total vol",fn:(w,e)=>{const t=e.target||12.5,v=e.total||100;return t>10&&t<40?((t-10)/30)*v:0;},unit:"mL",prec:2,extras:[{key:"target",label:"Konsentrasi target (%)",def:12.5,min:10.5,max:25},{key:"total",label:"Total volume (mL)",def:100,min:20,max:500}],note:"Sisa volume diisi D10%. Dextrose > 12.5% HANYA via akses sentral."},
+      "d10":{label:"Bolus D10% IV",expr:"2 mL × BB (kg)",fn:w=>2*w,unit:"mL",prec:1,note:"Berikan cepat 1–2 menit via IV. Segera lanjut infus maintenance GIR 6-8 mg/kg/menit."},
+      "gir":{label:"Laju infus GIR",expr:"Rate (mL/jam) = (GIR × 6 × BB) ÷ Kadar Dextrose %",fn:(w,e)=>{const g=e.gir||6,d=e.dex||10;return d>0?(g*6*w)/d:0;},unit:"mL/jam",prec:1,extras:[{key:"gir",label:"Target GIR",def:6,min:4,max:14,unit:"mg/kg/min"},{key:"dex",label:"Konsentrasi Dextrose (%)",def:10,min:5,max:25}],warn:{max:12,msg:"GIR > 12 → curiga hiperinsulinisme. Konsul endokrin."},note:"GIR awal 6-8 mg/kgBB/menit. Volume max 100 mL/kg/hari (hari pertama). Konsentrasi max vena perifer 12.5%, umbilikal max 25%."},
+      "dex5":{label:"Volume IVFD Dextrose 10% maintenance (hari pertama)",expr:"Minimal 60 mL/kg/hari (maks 100 mL/kg/hari)",fn:w=>Math.round(60*w),unit:"mL/hari",prec:0,note:"Hari pertama 60 mL/kg/hari minimal sampai mencapai GIR 6-8 mg/kg/menit."},
     },
     nodes:{
-      mulai:{title:"Apakah bayi simtomatik?",body:"Simtom: jitteriness, letargi, apnea, sianosis, kejang.",branches:[
-        {l:"Ya — Simtomatik",t:"danger",next:"simtom"},
-        {l:"Tidak — Asimtomatik",t:"neutral",next:"asimtom"},
-      ]},
-      simtom:{title:"Bolus D10% IV segera",body:"2 mL/kgBB D10W dalam 1–2 menit, lalu mulai infus maintenance.",action:"Bolus D10W → mulai GIR 6–8 mg/kgBB/menit → cek ulang GD 30 menit.",showF:["d10","gir"],branches:[
-        {l:"GD ≥ 47 mg/dL setelah 30 menit",t:"success",next:"stabil"},
-        {l:"GD masih < 47 mg/dL",t:"warning",next:"persisten"},
-      ]},
-      asimtom:{title:"Berapa nilai glukosa darah?",branches:[
-        {l:"< 25 mg/dL (0–4 jam) atau < 35 mg/dL (4–24 jam)",t:"danger",next:"simtom"},
-        {l:"25–47 mg/dL",t:"neutral",next:"minum"},
-      ]},
-      minum:{title:"Coba feeding oral",body:"ASI atau PASI 5–10 mL/kgBB. Cek GD 30 menit setelah minum.",branches:[
-        {l:"GD ≥ 47 mg/dL",t:"success",next:"stabil"},
-        {l:"GD < 47 mg/dL",t:"warning",next:"simtom"},
-      ]},
-      stabil:{title:"Lanjutkan, monitor ketat",action:"Cek GD tiap 3–4 jam. Stabil ≥ 47 × 3 kali → turunkan GIR bertahap 2 mg/kgBB/menit tiap 6–12 jam.",branches:[]},
-      persisten:{title:"Hipoglikemia persisten — eskalasi",body:"Ulangi bolus D10%, naikkan GIR step 2 mg/kgBB/menit. Bila GIR > 12 → dextrose konsentrasi lebih tinggi via sentral.",showF:["mix"],action:"Ambil sampel kritis (insulin, kortisol, GH, keton, laktat) SEBELUM koreksi lebih lanjut. Konsul endokrin.",branches:[]},
+      mulai:{title:"Glukosa Darah < 47 mg/dL",body:"Pastikan sampling darah yang adekuat. Konfirmasi dengan alat laboratorium bila GD sangat rendah.",
+        branches:[
+          {l:"GD < 25 mg/dL ATAU GD < 25 mg/dL dengan gejala (jitteriness, letargi, apnea, kejang)",t:"danger",next:"iv-bolus"},
+          {l:"GD >25 – <47 mg/dL (tanpa gejala berat)",t:"neutral",next:"oral-segera"},
+        ]},
+      "iv-bolus":{title:"Koreksi IV segera",body:"• Bolus IV DEXTROSE 10% 2 cc/kgBB\n• IVFD Dextrose 10% minimal 60 mL/kg/hari (hari pertama) sampai mencapai GIR 6-8 mg/kg/menit\n• Oral tetap diberikan bila tidak ada kontraindikasi",
+        showF:["d10","gir","dex5"],
+        branches:[
+          {l:"GD ulang 30 menit – 1 jam",t:"neutral",next:"cek-30"},
+        ]},
+      "cek-30":{title:"Cek GD ulang 30 menit – 1 jam",branches:[
+          {l:"GD < 47 mg/dL — belum mencapai target",t:"danger",next:"titrasi"},
+          {l:"GD ≥ 47 mg/dL",t:"success",next:"monitor"},
+        ]},
+      titrasi:{title:"Tingkatkan Dextrose",body:"Cara:\n• Volume ditingkatkan sampai maks 100 mL/kg/hari (hari pertama), ATAU\n• Konsentrasi ditingkatkan: vena perifer sampai maks 12.5%, umbilikal dapat mencapai 25%",
+        showF:["gir"],
+        branches:[
+          {l:"Cek GD ulang",t:"neutral",next:"cek-titrasi"},
+        ]},
+      "cek-titrasi":{title:"Cek GD setelah titrasi",branches:[
+          {l:"GD > 47 mg/dL",t:"success",next:"monitor"},
+          {l:"GD masih < 47 mg/dL — GIR sudah > 12",t:"danger",next:"hiperinsulin"},
+        ]},
+      hiperinsulin:{title:"GIR > 12 → Curiga Hiperinsulinisme",body:"Konsul endokrinologi. Pertimbangkan:\n• Diazoxide\n• Glukagon\n• Kortikosteroid\n• Evaluasi penyebab hiperinsulinisme",branches:[]},
+      "oral-segera":{title:"Nutrisi Oral / Enteral Segera",body:"ASI atau PASI maksimal 100 mL/kg/hari (hari pertama).",
+        branches:[
+          {l:"GD ulang 1 jam",t:"neutral",next:"cek-oral"},
+        ]},
+      "cek-oral":{title:"Cek GD ulang 1 jam",branches:[
+          {l:"GD 36–<47 mg/dL",t:"warning",next:"oral-dex"},
+          {l:"GD < 36 mg/dL",t:"danger",next:"iv-bolus"},
+          {l:"GD ≥ 47 mg/dL",t:"success",next:"monitor"},
+        ]},
+      "oral-dex":{title:"Tambahkan Oral Dextrose 5%",body:"Oral ASI atau PASI yang dilarutkan dengan Dextrose 5%.",
+        branches:[
+          {l:"GD ulang 1 jam",t:"neutral",next:"cek-oral2"},
+        ]},
+      "cek-oral2":{title:"Cek GD ulang 1 jam",branches:[
+          {l:"GD 36–<47 mg/dL (untuk kedua kalinya)",t:"danger",next:"iv-bolus"},
+          {l:"GD > 47 mg/dL",t:"success",next:"monitor"},
+        ]},
+      monitor:{title:"GD > 47 mg/dL — Lanjut Monitor",body:"Ulang GD 2–4 jam, 15 menit sebelum jadwal minum berikutnya, sampai 3 kali berturut-turut normal.",
+        action:"Tapering IVFD secara bertahap. Pertahankan GD > 47 mg/dL.",
+        branches:[
+          {l:"GD menetap > 47 mg/dL selama 3× berturut-turut",t:"success",next:"stabil"},
+          {l:"GD turun kembali < 47 mg/dL",t:"danger",next:"mulai"},
+        ]},
+      stabil:{title:"Stabil — Tapering & Discharge Planning",body:"Investigasi penyebab hipoglikemia. Edukasi keluarga tanda bahaya.",action:"Pastikan oral feeding adekuat sebelum stop IVFD.",branches:[]},
     }},
     {kind:"callout",tone:"danger",title:"Jangan",body:"Jangan berikan D25% atau D50% via vena perifer — risiko ekstravasasi dan kerusakan jaringan berat."},
   ]
@@ -3213,44 +3972,68 @@ const PROTOCOLS = [
     {kind:"criteria",title:"Etiologi — Cari Penyebab Reversibel DULU",items:["Hipoglikemia (tersering — cek GD segera)","Hipokalsemia (Ca < 7 mg/dL)","Hiponatremia (Na < 125 mEq/L)","Hipomagnesemia","HIE (Hypoxic-Ischemic Encephalopathy)","Stroke / Perdarahan intrakranial","Infeksi / Meningitis","Inborn Error of Metabolism (IEM)"]},
     {kind:"algo",id:"kej",title:"Alur Tatalaksana Kejang",entry:"start",formulas:{
       "d10k":{label:"Bolus D10% (koreksi hipoglikemia)",expr:"2 mL × BB (kg)",fn:w=>2*w,unit:"mL",prec:1},
-      "feno-l":{label:"Fenobarbital loading",expr:"20 mg × BB (kg)",fn:w=>20*w,unit:"mg",prec:0,warn:{max:40,msg:"Total loading > 40 mg/kgBB → risiko depresi nafas. Siapkan bag-mask."},note:"IV lambat 15–30 menit. Dosis kedua bila kejang berlanjut > 15 menit."},
-      "feno-m":{label:"Fenobarbital maintenance",expr:"4 mg × BB (kg) per hari",fn:(w,e)=>(e.dosis||4)*w,unit:"mg/hari",prec:0,extras:[{key:"dosis",label:"Dosis (mg/kg/hari)",def:4,min:3,max:5}],note:"Bagi 1–2 dosis/hari. Mulai 12 jam setelah loading. Target kadar 20–40 mcg/mL."},
-      "feni":{label:"Fenitoin loading",expr:"20 mg × BB (kg)",fn:w=>20*w,unit:"mg",prec:0,note:"Infus via NS (BUKAN dextrose). Laju maks 1 mg/kgBB/menit. Monitor EKG."},
-      "mida":{label:"Midazolam bolus",expr:"0.15 mg × BB (kg)",fn:w=>0.15*w,unit:"mg",prec:2,note:"Setelah bolus: infus 0.06 mg/kgBB/jam, titrasi naik 0.06 tiap 15 menit. Awasi depresi nafas."},
-      "b6":{label:"Piridoksin (Vit B6) — uji diagnostik",expr:"100 mg dosis tunggal (dosis tetap, bukan per kgBB)",fn:()=>100,unit:"mg",prec:0,note:"Respons dalam 5–10 menit pada defisiensi B6. Bila positif: lanjut oral 15–30 mg/kgBB/hari seumur hidup."},
+      "feno1":{label:"Fenobarbital loading dosis 1",expr:"20 mg × BB (kg) IV",fn:w=>20*w,unit:"mg",prec:0,note:"IV lambat dalam waktu 10–15 menit. Monitor pernapasan."},
+      "feno2":{label:"Fenobarbital dosis ke-2",expr:"10 mg × BB (kg) IV (dapat diulang 2×)",fn:w=>10*w,unit:"mg",prec:0,note:"Diberikan 10 mg/kgBB IV dalam 10-15 menit, dapat diulang sebanyak 2 kali dengan selang waktu 30 menit."},
+      "feni":{label:"Fenitoin loading",expr:"20 mg × BB (kg) IV dalam NaCl 0.9%",fn:w=>20*w,unit:"mg",prec:0,note:"IV dalam NaCl 0.9% 10–20 cc, kecepatan 1 mg/kgBB/menit. Monitor EKG (aritmia). JANGAN dalam dextrose."},
+      "lora":{label:"Lorazepam IV",expr:"0.05–0.1 mg × BB (kg)",fn:w=>0.075*w,unit:"mg",prec:2,note:"Diberikan tiap 8–12 jam. Awasi depresi nafas."},
+      "mida":{label:"Midazolam bolus",expr:"0.2 mg × BB (kg) IV",fn:w=>0.2*w,unit:"mg",prec:2,note:"Dilanjutkan dengan dosis titrasi 0.1–0.4 mg/kgBB/jam IV. Awasi depresi nafas."},
+      "b6":{label:"Piridoksin (Vitamin B6) IV",expr:"50–100 mg × BB (kg) IV, dilanjutkan 10–100 mg/kgBB/hari oral",fn:w=>100*w,unit:"mg IV",prec:0,note:"Piridoksin 50-100 mg/kgBB IV dilanjutkan 10-100 mg/kgBB/hari per oral. Untuk kejang refrakter dicurigai defisiensi piridoksin."},
+      "feno-m":{label:"Fenobarbital maintenance",expr:"3–5 mg × BB (kg) per hari",fn:w=>4*w,unit:"mg/hari",prec:0,note:"Dosis tunggal atau terbagi tiap 12 jam IV atau PO."},
+      "feni-m":{label:"Fenitoin maintenance",expr:"4–8 mg × BB (kg) per hari",fn:w=>6*w,unit:"mg/hari",prec:0,note:"IV atau PO, dosis terbagi 2 atau 3 kali."},
     },
     nodes:{
-      start:{title:"Stabilisasi ABC + Cek GD segera",branches:[
-        {l:"GD < 47 mg/dL → Hipoglikemia",t:"danger",next:"hipo"},
-        {l:"GD normal → Tatalaksana kejang",t:"neutral",next:"feno"},
-      ]},
-      hipo:{title:"Koreksi hipoglikemia DULU",showF:["d10k"],action:"Bolus D10% 2 mL/kgBB IV.",branches:[
-        {l:"Kejang berhenti setelah GD normal",t:"success",next:"monitor"},
-        {l:"Kejang berlanjut setelah GD normal",t:"warning",next:"feno"},
-      ]},
-      feno:{title:"Fenobarbital — Lini Pertama",showF:["feno-l"],action:"IV lambat. Bila kejang berlanjut 15 menit: dosis kedua 20 mg/kg (total maks 40 mg/kg).",branches:[
-        {l:"Kejang berhenti",t:"success",next:"monitor"},
-        {l:"Kejang berlanjut (total > 40 mg/kg)",t:"warning",next:"lini2"},
-      ]},
-      lini2:{title:"Pilih antiepilepsi lini kedua",branches:[
-        {l:"Fenitoin",t:"neutral",next:"feni"},
-        {l:"Midazolam infus",t:"neutral",next:"mida"},
-        {l:"Curiga defisiensi Piridoksin (B6)",t:"neutral",next:"b6"},
-      ]},
-      feni:{title:"Fenitoin",showF:["feni"],action:"Monitor EKG. Bila bradikardia: lambatkan/hentikan.",branches:[
-        {l:"Kejang berhenti",t:"success",next:"monitor"},
-        {l:"Berlanjut",t:"danger",next:"mida"},
-      ]},
-      mida:{title:"Midazolam infus kontinu",showF:["mida"],action:"Pantau respirasi dan SpO₂ ketat.",branches:[
-        {l:"Terkontrol",t:"success",next:"monitor"},
-        {l:"Refrakter",t:"danger",next:"refrakter"},
-      ]},
-      b6:{title:"Uji terapeutik Piridoksin",showF:["b6"],branches:[
-        {l:"Respons positif dalam 10 menit",t:"success",next:"monitor"},
-        {l:"Tidak respons",t:"danger",next:"refrakter"},
-      ]},
-      refrakter:{title:"Kejang Refrakter — Konsul Neurologi",action:"Pertimbangkan: lidokain infus, levetirasetam. EEG monitoring. MRI otak. Panel IEM (asam amino, organik). Konsul neurologi anak.",branches:[]},
-      monitor:{title:"Monitor & Cari Etiologi",showF:["feno-m"],action:"Fenobarbital maintenance mulai 12 jam setelah loading. Investigasi: USG kepala, MRI, EEG, panel metabolik.",branches:[]},
+      start:{title:"Stabilisasi ABC + Cek GD segera",body:"Pastikan jalan napas, berikan O₂ bila perlu. Pasang akses IV.",
+        branches:[
+          {l:"GD < 47 mg/dL → Koreksi hipoglikemia DULU",t:"danger",next:"hipo"},
+          {l:"GD normal → Mulai tatalaksana kejang",t:"neutral",next:"feno1"},
+        ]},
+      hipo:{title:"Koreksi Hipoglikemia",showF:["d10k"],action:"Bolus D10% 2 mL/kgBB IV segera.",
+        branches:[
+          {l:"Kejang berhenti setelah GD normal",t:"success",next:"monitor"},
+          {l:"Kejang berlanjut meski GD sudah normal",t:"warning",next:"feno1"},
+        ]},
+      feno1:{title:"Fenobarbital — Lini Pertama",body:"20 mg/kgBB intravena (IV) dalam waktu 10–15 menit.",
+        showF:["feno1"],
+        branches:[
+          {l:"Kejang berhenti — pertimbangkan rawatan",t:"success",next:"rawatan"},
+          {l:"Kejang berlanjut",t:"danger",next:"feno2"},
+        ]},
+      feno2:{title:"Fenobarbital — Dosis Tambahan",body:"10 mg/kgBB intravena (IV) dalam waktu 10–15 menit. Dapat diulang sebanyak 2 kali dengan selang waktu 30 menit.",
+        showF:["feno2"],
+        branches:[
+          {l:"Kejang berhenti",t:"success",next:"rawatan"},
+          {l:"Kejang berlanjut",t:"danger",next:"feni"},
+        ]},
+      feni:{title:"Fenitoin — Lini Kedua",body:"20 mg/kgBB intravena (IV) dalam NaCl 0.9% 10–20 cc, kecepatan 1 mg/kgBB/menit.",
+        showF:["feni"],
+        branches:[
+          {l:"Kejang berhenti",t:"success",next:"rawatan"},
+          {l:"Kejang berlanjut",t:"danger",next:"lini3"},
+        ]},
+      lini3:{title:"Kejang Refrakter — Lini Ketiga",body:"Pilih salah satu atau kombinasi:",
+        branches:[
+          {l:"Lorazepam 0.05–0.1 mg/kgBB tiap 8–12 jam",t:"neutral",next:"lora-node"},
+          {l:"Midazolam bolus 0.2 mg/kgBB dilanjutkan titrasi infus",t:"neutral",next:"mida-node"},
+          {l:"Piridoksin 50–100 mg/kgBB IV dilanjutkan oral",t:"neutral",next:"b6-node"},
+        ]},
+      "lora-node":{title:"Lorazepam",showF:["lora"],action:"0.05–0.1 mg/kgBB tiap 8–12 jam IV. Awasi depresi napas.",
+        branches:[
+          {l:"Evaluasi respons",t:"neutral",next:"monitor"},
+        ]},
+      "mida-node":{title:"Midazolam Infus",showF:["mida"],action:"Bolus 0.2 mg/kgBB dilanjutkan infus 0.1–0.4 mg/kgBB/jam IV, titrasi naik sesuai respons.",
+        branches:[
+          {l:"Evaluasi respons",t:"neutral",next:"monitor"},
+        ]},
+      "b6-node":{title:"Piridoksin (Vitamin B6)",showF:["b6"],action:"Terutama untuk kejang refrakter yang dicurigai defisiensi piridoksin.",
+        branches:[
+          {l:"Evaluasi respons",t:"neutral",next:"monitor"},
+        ]},
+      rawatan:{title:"Pertimbangkan Rawatan — Kejang Berhenti",body:"Bila kejang berhenti, pertimbangkan rawatan:\n• Fenobarbital 3–5 mg/kgBB/hari, dosis tunggal atau terbagi tiap 12 jam IV atau PO\n• Fenitoin 4–8 mg/kgBB/hari IV atau PO, dosis terbagi 2 atau 3",
+        showF:["feno-m","feni-m"],
+        branches:[
+          {l:"Lanjut monitoring",t:"success",next:"monitor"},
+        ]},
+      monitor:{title:"Monitoring Pasca-Kejang",body:"Pantau: tanda vital, GD serial, level fenobarbital (target 20-40 mcg/mL), EEG bila tersedia.",action:"Investigasi etiologi: infeksi, metabolik, struktural, genetik.",branches:[]},
     }},
     {kind:"callout",tone:"info",title:"Kejang vs Tremor / Jitteriness",body:"Tremor: dapat dihentikan dengan fiksasi, dipicu rangsang. Kejang: tidak bisa dihentikan fiksasi, sering disertai deviasi mata. Bila ragu → EEG."},
   ]
@@ -9600,9 +10383,12 @@ function showScreen(id) {
   for (var i = 0; i < screens.length; i++) {
     screens[i].classList.remove('active');
   }
-  document.getElementById('screen-' + id).classList.add('active');
+  var target = document.getElementById('screen-' + id);
+  if (target) {
+    target.classList.add('active');
+    target.scrollTop = 0;   // reset this screen's scroll to top
+  }
   currentScreen = id;
-  window.scrollTo(0, 0);
 }
 
 function showTab(tab) {
@@ -9818,19 +10604,28 @@ function renderDetail() {
     hdr = '<button class="detail-back" onclick="goBackToSpecialty()">‹ Kembali</button>'
         + '<div class="detail-title">' + p.icon + ' ' + p.title + '</div>'
         + (p.subtitle ? '<div class="detail-sub">' + p.subtitle + '</div>' : '')
-        + '<div class="weight-bar">'
+        + '<div class="weight-bar-wrap" id="weight-bar-wrap">'
+        + '<button class="wb-toggle" id="wb-toggle" onclick="toggleWeightBar()"'
+        +   ' title="Tap untuk ' + (weight > 0 ? 'ubah' : 'isi') + ' berat badan">'
+        + '<span class="wb-toggle-icon">⚖️</span>'
+        + '<span class="wb-toggle-label" id="wb-toggle-label">'
+        +   (weight > 0 ? weight + ' kg' : 'Masukkan BB')
+        + '</span>'
+        + '<svg class="wb-toggle-caret" id="wb-toggle-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>'
+        + '</button>'
+        + '<div class="wb-expand" id="wb-expand" style="display:' + (weight > 0 ? 'none' : 'flex') + '">'
         + '<div class="weight-icon">👶</div>'
         + '<div style="flex:1">'
         + '<div class="weight-label">Berat Badan Pasien</div>'
         + '<div class="weight-row">'
         + '<input class="weight-input" id="weight-input" type="number" inputmode="decimal"'
         + ' step="0.01" min="0" max="200" placeholder="0.00"'
-        + ' value="' + (weight || '') + '" oninput="onWeightChange(this.value)">'
+        + ' value="' + (weight || '') + '" oninput="onWeightChange(this.value)" autofocus>'
         + '<span class="weight-unit">kg</span>'
         + '</div></div>'
         + (weight > 0 ? '<button class="weight-clear" onclick="clearWeight()">✕</button>' : '')
         + '</div>'
-        + (weight <= 0 ? '<div class="weight-hint">⚖️ Masukkan berat badan untuk kalkulator</div>' : '');
+        + '</div>';
   } else {
     hdr = '<button class="detail-back" onclick="goBackToSpecialty()">‹ Kembali</button>'
         + '<div class="detail-title">' + p.icon + ' ' + p.title + '</div>'
@@ -10241,33 +11036,22 @@ function onWeightChange(val) {
   weight = parseFloat(val) || 0;
   if (weight > 0) sessionStorage.setItem('cp_weight', weight);
   else sessionStorage.removeItem('cp_weight');
-  var hdr = document.getElementById('detail-header-inner');
-  if (!hdr) return;
-  var oldClear = hdr.querySelector('.weight-clear');
-  var oldHint = hdr.querySelector('.weight-hint');
-  if (weight > 0) {
-    if (!oldClear) {
-      var btn = document.createElement('button');
-      btn.className = 'weight-clear';
-      btn.textContent = '✕';
-      btn.setAttribute('onclick', 'clearWeight()');
-      var bar = hdr.querySelector('.weight-bar');
-      if (bar) bar.appendChild(btn);
-    }
-    if (oldHint) oldHint.parentNode.removeChild(oldHint);
-  } else {
-    if (oldClear) oldClear.parentNode.removeChild(oldClear);
-    if (!oldHint) {
-      var d = document.createElement('div');
-      d.className = 'weight-hint';
-      d.textContent = '⚖️ Masukkan berat badan untuk kalkulator';
-      hdr.appendChild(d);
-    }
-  }
+  // Update toggle label + auto-collapse
+  updateWeightToggleLabel();
   updateAllFormulas();
 }
 
 function clearWeight() {
+  // Also reset toggle
+  var lbl = document.getElementById('wb-toggle-label');
+  if (lbl) lbl.textContent = 'Masukkan BB';
+  var wrap = document.getElementById('wb-expand');
+  if (wrap) { wrap.style.display = 'flex'; }
+  var caret = document.getElementById('wb-toggle-caret');
+  if (caret) caret.style.transform = 'rotate(180deg)';
+  var inp = document.getElementById('weight-input');
+  if (inp) { inp.value = ''; inp.focus(); }
+
   weight = 0;
   sessionStorage.removeItem('cp_weight');
   var inp = document.getElementById('weight-input');
@@ -13678,19 +14462,36 @@ function renderMustKnowBox(innerHtml, algoBlocks) {
         + '<span class="ov-section-icon">🗺️</span>' + ab.title + '</div>';
     }
     var fcTitle = (currentProtocol ? currentProtocol.title : '') + ' — ' + (ab.title || 'Alur');
-    var fcId = 'fcw' + ai;
+    var fcId    = 'fcw' + ai;
+    var fcBodyId = fcId + '-body';
+    overviewSections += '<button class="fc-toggle-btn" id="' + fcId + '-tbtn"'
+      + ' onclick="toggleFcOverview(\'' + fcId + '\')">'
+      + '<svg class="fc-toggle-caret open" id="' + fcId + '-caret" width="14" height="14"'
+      + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+      + '<polyline points="18 15 12 9 6 15"/></svg>'
+      + '<span id="' + fcId + '-tlbl">Sembunyikan Bagan</span>'
+      + '</button>';
+    overviewSections += '<div class="fc-collapsible" id="' + fcBodyId + '">';
     overviewSections += '<div class="fc-toolbar">' 
       + '<button class="fc-zoom-btn" onclick="fcZoom(\'' + fcId + '\',-1)">−</button>'
       + '<span class="fc-zoom-label" id="' + fcId + '-zl">100%</span>'
       + '<button class="fc-zoom-btn" onclick="fcZoom(\'' + fcId + '\',1)">+</button>'
-      + '<button class="fc-zoom-reset" onclick="fcZoomReset(\'' + fcId + '\')">&circlearrowleft; Reset</button>'
+      + '<button class="fc-zoom-reset" onclick="fcZoomReset(\'' + fcId + '\')">&circlearrowleft;</button>'
+      + '<button class="fc-fullscreen-btn" onclick="openFcFullscreen(\'' + fcId + '\', \'' + fcTitle.replace(/'/g,'') + '\', \'' + fcTitle.replace(/'/g,'') + '\')">' 
+      + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+      + '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>'
+      + '<line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'
+      + '</svg> Lihat Penuh</button>'
       + '<button class="fc-download-btn" style="margin:0" data-dltitle="' + fcTitle.replace(/"/g,'') + '" onclick="handleFlowchartDownload(this)">'
       + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PNG</button>'
       + '</div>'
       + '<div class="fc-chart-wrap" id="' + fcId + '"'
-      + ' onwheel="fcWheelZoom(event,\'' + fcId + '\')">';
+      + ' onwheel="fcWheelZoom(event,\'' + fcId + '\')"'
+      + ' onmousedown="fcPanStart(event,\'' + fcId + '\')"'
+      + ' ontouchstart="fcTouchStart(event,\'' + fcId + '\')"';
     overviewSections += '<div class="fc-hint">🔍 Scroll/cubit = zoom &nbsp;|&nbsp; Geser = pan</div>';
     overviewSections += renderAlgoFlowchart(ab);
+    overviewSections += '</div>';
     overviewSections += '</div>';
     overviewSections += '</div>';
   }
@@ -14304,7 +15105,7 @@ function renderDocsList() {
     var matchCat = docsActiveCat === 'Semua' || d.cat === docsActiveCat;
     if (!matchCat) return false;
     if (!docsSearch) return true;
-    var q = docsSearch;
+    var q = docsSearch.toLowerCase();
     if (d.title.toLowerCase().indexOf(q) >= 0) return true;
     if (d.org.toLowerCase().indexOf(q) >= 0) return true;
     if (d.desc.toLowerCase().indexOf(q) >= 0) return true;
@@ -14457,12 +15258,7 @@ function closeDocsViewer() {
 
 
 
-function closeDocsViewer() {
-  var viewer = document.getElementById('docs-viewer');
-  var frame  = document.getElementById('docs-viewer-frame');
-  if (viewer) viewer.style.display = 'none';
-  if (frame)  frame.src = 'about:blank';
-}
+
 
 
 function toggleMustKnow(uid) {
@@ -14500,7 +15296,245 @@ function renderFooter(p) {
 // ════════════════════════════════════════════════════════════════
 // LAYER 6 — FOOTER / INIT
 // ════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+// WEIGHT BAR TOGGLE
+// ════════════════════════════════════════════════════════════
+function toggleWeightBar() {
+  var wrap  = document.getElementById('wb-expand');
+  var caret = document.getElementById('wb-toggle-caret');
+  if (!wrap) return;
+  var isOpen = wrap.style.display !== 'none';
+  if (isOpen) {
+    wrap.style.display = 'none';
+    if (caret) caret.style.transform = 'rotate(0deg)';
+  } else {
+    wrap.style.display = 'flex';
+    if (caret) caret.style.transform = 'rotate(180deg)';
+    var inp = document.getElementById('weight-input');
+    if (inp) setTimeout(function(){ inp.focus(); inp.select(); }, 80);
+  }
+}
+
+function updateWeightToggleLabel() {
+  var lbl   = document.getElementById('wb-toggle-label');
+  var wrap  = document.getElementById('wb-expand');
+  var caret = document.getElementById('wb-toggle-caret');
+  if (!lbl) return;
+  if (weight > 0) {
+    lbl.textContent = weight + ' kg';
+    // Auto-collapse input panel after 1.2s
+    if (wrap) {
+      setTimeout(function() {
+        wrap.style.display = 'none';
+        if (caret) caret.style.transform = 'rotate(0deg)';
+      }, 1200);
+    }
+  } else {
+    lbl.textContent = 'Masukkan BB';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// FLOWCHART FULLSCREEN MODAL
+// ════════════════════════════════════════════════════════════
+var _fcFullscreenTitle = '';
+
+function openFcFullscreen(sourceId, title) {
+  var src = document.getElementById(sourceId);
+  if (!src) return;
+  var fcChart = src.querySelector ? src.querySelector('.fc-chart') : null;
+  if (!fcChart) return;
+
+  var modal   = document.getElementById('fc-fullscreen');
+  var content = document.getElementById('fc-fs-content');
+  var titleEl = document.getElementById('fc-fs-title');
+  var zl      = document.getElementById('fc-fs-wrap-zl');
+  if (!modal || !content) return;
+
+  content.innerHTML = '';
+  var clone = fcChart.cloneNode(true);
+  clone.style.transform = '';
+  content.appendChild(clone);
+
+  _fcFullscreenTitle = title || 'Alur Tatalaksana';
+  if (titleEl) titleEl.textContent = _fcFullscreenTitle;
+  if (zl)      zl.textContent = '100%';
+
+  _fcZoom['fc-fs-wrap'] = 1.0;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFcFullscreen() {
+  var modal   = document.getElementById('fc-fullscreen');
+  var content = document.getElementById('fc-fs-content');
+  if (modal)   modal.style.display = 'none';
+  if (content) content.innerHTML   = '';
+  document.body.style.overflow = '';
+}
+
+function fcFullscreenDownload() {
+  var dlBtn   = document.getElementById('fc-fs-dl-btn');
+  var content = document.getElementById('fc-fs-content');
+  if (!content) return;
+  if (dlBtn) { dlBtn.textContent = '⏳'; dlBtn.disabled = true; }
+
+  var safeTitle = (_fcFullscreenTitle || 'Alur').replace(/[^a-zA-Z0-9 ]/g,'').trim();
+
+  function doDownload() {
+    if (typeof html2canvas === 'function') {
+      html2canvas(content, {
+        backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false
+      }).then(function(canvas) {
+        var link   = document.createElement('a');
+        link.download = safeTitle + '.png';
+        link.href  = canvas.toDataURL('image/png');
+        link.click();
+        if (dlBtn) {
+          dlBtn.textContent = '✅ Tersimpan!';
+          dlBtn.disabled = false;
+          setTimeout(function(){
+            dlBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PNG';
+          }, 2500);
+        }
+      }).catch(function() {
+        if (dlBtn) { dlBtn.textContent = 'PNG'; dlBtn.disabled = false; }
+      });
+    } else {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = doDownload;
+      s.onerror = function() {
+        if (dlBtn) { dlBtn.textContent = 'PNG'; dlBtn.disabled = false; }
+      };
+      document.head.appendChild(s);
+    }
+  }
+  doDownload();
+}
+
+
+// ════════════════════════════════════════════════════
+// DARK MODE TOGGLE
+// ════════════════════════════════════════════════════
+var _darkMode = false;
+
+function initDarkMode() {
+  // Check saved preference first
+  var saved = sessionStorage.getItem('cp_dark') || localStorage.getItem('cp_dark');
+  if (saved === '1') {
+    _darkMode = true;
+  } else if (saved === '0') {
+    _darkMode = false;
+  } else {
+    // Use system preference as default
+    _darkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  applyDarkMode();
+}
+
+function applyDarkMode() {
+  var html = document.documentElement;
+  var icon = document.getElementById('dark-mode-icon');
+  var fab  = document.getElementById('dark-mode-fab');
+  if (_darkMode) {
+    html.classList.add('dark');
+    html.style.colorScheme = 'dark';
+    if (icon) icon.textContent = '☀️';
+    if (fab) {
+      fab.title = 'Mode Terang';
+      fab.style.background = 'rgba(30,41,59,.85)';
+      fab.style.color = '#fbbf24';
+    }
+    // Update theme-color for PWA
+    var tm = document.querySelector('meta[id="theme-color-meta"]') ||
+             document.querySelector('meta[name="theme-color"]');
+    if (tm) tm.setAttribute('content', '#0d1117');
+  } else {
+    html.classList.remove('dark');
+    html.style.colorScheme = 'light';
+    if (icon) icon.textContent = '🌙';
+    if (fab) {
+      fab.title = 'Mode Gelap';
+      fab.style.background = '';
+      fab.style.color = '';
+    }
+    var tm = document.querySelector('meta[id="theme-color-meta"]') ||
+             document.querySelector('meta[name="theme-color"]');
+    if (tm) tm.setAttribute('content', '#0f7b6c');
+  }
+}
+
+function toggleDarkMode() {
+  _darkMode = !_darkMode;
+  applyDarkMode();
+  // Save preference
+  try {
+    localStorage.setItem('cp_dark', _darkMode ? '1' : '0');
+    sessionStorage.setItem('cp_dark', _darkMode ? '1' : '0');
+  } catch(e) {}
+  // Haptic feedback on supported devices
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+
+function triggerPWAInstall() {
+  if (window._deferredInstall) {
+    window._deferredInstall.prompt();
+    window._deferredInstall.userChoice.then(function(result) {
+      if (result.outcome === 'accepted') {
+        console.log('[PWA] Installed');
+      }
+      window._deferredInstall = null;
+    });
+  } else {
+    // Fallback instructions
+    var ua = navigator.userAgent.toLowerCase();
+    var msg = '';
+    if (/iphone|ipad/.test(ua)) {
+      msg = '📱 Di Safari: tap ⎙ lalu pilih "Add to Home Screen"';
+    } else if (/android/.test(ua)) {
+      msg = '📱 Di Chrome: tap menu ⋮ lalu pilih "Add to Home screen" atau "Install app"';
+    } else {
+      msg = '💻 Di Chrome/Edge: cari ikon install (⊕) di address bar';
+    }
+    alert(msg);
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// TOGGLE FLOWCHART OVERVIEW (Sembunyikan/Tampilkan Bagan)
+// ════════════════════════════════════════════════════════════
+function toggleFcOverview(fcId) {
+  var body   = document.getElementById(fcId + '-body');
+  var caret  = document.getElementById(fcId + '-caret');
+  var label  = document.getElementById(fcId + '-tlbl');
+  var btn    = document.getElementById(fcId + '-tbtn');
+  if (!body) return;
+
+  var isOpen = !body.classList.contains('hidden');
+
+  if (isOpen) {
+    // SEMBUNYIKAN
+    body.classList.add('hidden');
+    if (caret) caret.classList.remove('open');
+    if (label) label.textContent = 'Tampilkan Bagan';
+    if (btn)   btn.title = 'Klik untuk tampilkan bagan alur';
+  } else {
+    // TAMPILKAN
+    body.classList.remove('hidden');
+    if (caret) caret.classList.add('open');
+    if (label) label.textContent = 'Sembunyikan Bagan';
+    if (btn)   btn.title = 'Klik untuk sembunyikan bagan alur';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  // ── Init dark mode FIRST (before render) ─────────────────
+  initDarkMode();
+
   // ── Init specialty grid (MUST be first) ─────────────────
   initHome();
 
@@ -14513,9 +15547,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Register service worker for PWA offline support ─────
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-      .catch(function(){/* SW not available in file:// mode */});
+    navigator.serviceWorker.register('./service-worker.js').then(function(reg) {
+      // Check for updates
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        newSW.addEventListener('statechange', function() {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available — silently update
+            newSW.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    }).catch(function(){/* SW not available in file:// mode */});
   }
+
+  // PWA Install prompt
+  var _deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    _deferredInstall = e;
+    // Show install badge on about page
+    var badge = document.getElementById('pwa-install-btn');
+    if (badge) badge.style.display = 'flex';
+  });
+  window.addEventListener('appinstalled', function() {
+    _deferredInstall = null;
+    var badge = document.getElementById('pwa-install-btn');
+    if (badge) badge.style.display = 'none';
+  });
 });
 
 </script>
