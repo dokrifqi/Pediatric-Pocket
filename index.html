@@ -12,10 +12,10 @@
 <meta name="description" content="Panduan klinis pediatri — 117 protokol, kalkulator dosis real-time, dan Quick Crash Cart emergensi untuk dokter anak.">
 <meta name="keywords" content="pediatri,pediatric,dokter anak,neonatologi,dosis obat,kalkulator medis">
 <meta name="author" content="dr. Mochamad Rifqie Nugraha Kamal">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <title>Catatan Pediatri — dr. Mochamad Rifqie Nugraha Kamal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -15547,7 +15547,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Register service worker for PWA offline support ─────
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').then(function(reg) {
+    navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
       // Check for updates
       reg.addEventListener('updatefound', function() {
         var newSW = reg.installing;
